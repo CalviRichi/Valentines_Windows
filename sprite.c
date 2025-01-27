@@ -98,8 +98,9 @@ void drawSpriteMap(Sprite s) {
 }
 
 // different functions for different sprites
-void moveSprite(Sprite * s, float dt, Player p, Map m) {
+void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
     
+    Player p = *pl;
 
     if (s->state == 0 || m.map!=m.m[0]) {
         return;
@@ -155,10 +156,10 @@ void moveSprite(Sprite * s, float dt, Player p, Map m) {
         float d = sqrt(x1*x1 + y1*y1);
         if (d < 10) {
             s->state = 0;
+            if (pl->heartCounter < 12) pl->heartCounter++;
             PlaySound(TEXT("dependencies/assets/coin.wav"), NULL, SND_FILENAME | SND_ASYNC);
         }
-        
-        
+       
         return;
     }
 }

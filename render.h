@@ -3,13 +3,13 @@
 
 #include "game_types.h"
 
-void drawSide();
+void drawSide(Player p);
 
 void drawRays3D(Player p, Map map, int * bTravel, int depth[120]);
 
-void drawGun();
+void drawGun(Player p);
 
 void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int depth[120]);
 
-void screen(int v);
+void drawScreen(int v); // draws a full screen of a given image
 #endif

@@ -48,8 +48,6 @@
 #define DR 0.0174533 // one degree in radians 
 #define MIN_DISTANCE 30 // the minimum distance to a wall
 
-
-
 typedef enum
 { // enum used to set button buffer
     W_DOWN = 0x1,
@@ -82,6 +80,8 @@ typedef struct Map{
 typedef struct {
     float plX, plY; // x and y coordinates
     float pdX, pdY, pa; // directions in each axis and an angle for the raycaster
+    char hasGun; // whether or not the player has a gun
+    int heartCounter;
     /*
     Inventory
     Has gun?
@@ -130,5 +130,5 @@ Sprite *spriteAdd(Sprite * tail, int state, int type, int map, int health, float
 void spriteRemove(Sprite * item, Sprite * sCopy, Sprite ** headSprite);
 void drawSpriteMap(Sprite s);
 void drawSprite(Sprite * sp, Player p, Map m, int * flashTimer, int depth[120]);
-void moveSprite(Sprite * s, float dt, Player p, Map m);
+void moveSprite(Sprite * s, float dt, Player * p, Map m);
 #endif

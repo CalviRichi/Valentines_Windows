@@ -2,9 +2,7 @@
 #include "maps.h"
 #include "render.h"
 
-// put all these textures into one C file
-
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 static const char db = TRUE;
@@ -39,76 +37,12 @@ static int flashTimer = 0; // this will be kept in main
 static int bTravel; // set during the ray cast, vector for bullet travel
 static char bulletTravel = FALSE; // this could be replaced with flashtimer
 
-static int depth[120] = {};
-
-//Sprite * entities[4] = {NULL};
-
- // some map tile that is not used
-/*
-int map_walls_big[] = {
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-};
-
-int map_floor_big[] = {
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-};
-
-int map_ceiling_big[] = {
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-};
-*/
+static int depth[120];
 
 void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (action == GLFW_PRESS)
     {
-        // printf("Keypress: %d\n", key);
-
         switch (key)
         {
         case GLFW_KEY_ESCAPE:
@@ -145,7 +79,6 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
     }
     else if (action == GLFW_RELEASE)
     {
-        // printf("Key release: %d\n", key);
         switch (key)
         {
         case W:
@@ -183,6 +116,8 @@ void levelInit(Sprite ** s) {
 }
 /*
 This requires some refactoring, ideally a map could contain a list of the sprites that will exist per level
+
+ADD SPRITES THAT EXIST ON OTHER MAPS
 */
 
 int main()
@@ -199,7 +134,7 @@ int main()
     }
 
     //glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // you can't resize the window
-    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Fruity Game", NULL, NULL); // name the window anything applicable 
+    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Valentines Game", NULL, NULL); // name the window anything applicable 
     //960 512
     if (window == NULL)
     {
@@ -232,10 +167,12 @@ int main()
     // *s = newSprite(1,2,1,3,96,96,30);
     //headSprite->next = newSprite(1, 2, 1, 3, 380, 418, 20);
 
+    Sprite* hS; // copies of the head for each list
+    Map* hM;
 
     // While it's annoying to have such a long function header, this allows for dynamic creation of sprites
     Map * headMap = newMap(map_walls_small, map_walls_small_2, map_walls_small_3, map_walls_small_4);
-
+    
     for (int i = 0; i < ROOM_NUM; i++) {
         headMap->c[i] = map_ceiling_small;
         headMap->f[i] = map_floor_small;
@@ -244,22 +181,19 @@ int main()
     headMap->mapF = headMap->f[0];
     // this could be its own function
 
-    Player player = {};
-    player.plX = 100;
-    player.plY = 400;
-    player.pdX = cos(0.0001)*VIEWING_ANGLE_CHANGE; 
-    player.pdY = sin(0.0001)*VIEWING_ANGLE_CHANGE;
+    Player player = {
+        .plX = 100,
+        .plY = 400,
+        .pdX = (float)cos(0.0001) * VIEWING_ANGLE_CHANGE,
+        .pdY = (float)sin(0.0001) * VIEWING_ANGLE_CHANGE,
+        .hasGun = TRUE // will eventually start as false
+    };
 
     double lastTime = glfwGetTime();
     double currentTime;
     double deltaTime;
 
-    Sprite * hS; // copies of the head for each list
-    Map * hM;
-
-    //Sprite * hT = headSprite; // these will be copies of the tail for use in functions that create enemies
-    //Map * hT = headMap; 
-
+    
 
     /*
     the main test:
@@ -286,7 +220,7 @@ int main()
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                screen(1);
+                drawScreen(1);
 
                 glfwSwapBuffers(window); // has to be last
 
@@ -305,7 +239,7 @@ int main()
                 hS = headSprite;
                 while (hS) {
 
-                    moveSprite(hS, deltaTime, player, *hM);
+                    moveSprite(hS, deltaTime, &player, *hM);
                         // it should be something like shootgun takes in the sprite and 
                         // runs a loop for each of the sprites, regardless of if they're NULL
                         // and bulletScan simply fires into the wall if so
@@ -323,7 +257,7 @@ int main()
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);      
                 
                 drawRays3D(player, *hM, &bTravel, depth);
-                drawSide();
+                drawSide(player);
                 while (hS != NULL) {
                     if (animation == 0) {
                         if (hS->map == 12) hS->map = 1;
@@ -376,7 +310,7 @@ int main()
                 */   
                 //}
 
-                drawGun();
+                drawGun(player);
                 glfwSwapBuffers(window); 
 
                 break;

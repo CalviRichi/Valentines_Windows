@@ -4,17 +4,19 @@ static int b_x, b_x_add, b_x_sub, b_y, b_y_add, b_y_sub;
 static int beginPosX, beginPosY, endPosX, endPosY;
 
 void shootGun(Sprite * s, Player p, int bTravel, int * flashTimer) {
-    //PlaySound(TEXT("dependencies/assets/gunshot.wav"), NULL, SND_FILENAME | SND_ASYNC);
-    while(1) {
-        bulletScan(s, p, bTravel, flashTimer);
-        printf("value = %d\n", bTravel);
-        if (s!=NULL && s->next != NULL) {
-            s = s->next;
-        }else {
-            break;
+    if (p.hasGun) {
+        PlaySound(TEXT("dependencies/assets/gunshot.wav"), NULL, SND_FILENAME | SND_ASYNC);
+        while (1) {
+            bulletScan(s, p, bTravel, flashTimer);
+            //printf("value = %d\n", bTravel);
+            if (s != NULL && s->next != NULL) {
+                s = s->next;
+            }
+            else {
+                break;
+            }
         }
     }
-    
     
 }
 

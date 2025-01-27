@@ -2,26 +2,28 @@
 #include "dependencies/assets/textures.h"
 #include "dependencies/assets/title.ppm"
 
-void drawGun() {
-    int clmit = 181;
-    for (int y = 0; y < 32; y++) {
-        for (int x = 0; x < 32; x++) {
-            int pixel = (32 * y * 3) + (x * 3);
-            int r = T_GUN[pixel];
-            int g = T_GUN[pixel + 1];
-            int b = T_GUN[pixel + 2];
+void drawGun(Player p) {
+    if (p.hasGun) {
+        int clmit = 181;
+        for (int y = 0; y < 32; y++) {
+            for (int x = 0; x < 32; x++) {
+                int pixel = (32 * y * 3) + (x * 3);
+                int r = T_GUN[pixel];
+                int g = T_GUN[pixel + 1];
+                int b = T_GUN[pixel + 2];
 
-            glPointSize(8);
-            glColor3ub(r, g, b);
-            glBegin(GL_POINTS);
-            if (!(r > clmit && g > clmit && b > clmit)) {
-                
-                glVertex2i(WINDOW_OFFSET + 350 + (x * STRETCH), 428 + (y * STRETCH)); // 8 not 7
-                //300
+                glPointSize(STRETCH);
+                glColor3ub(r, g, b);
+                glBegin(GL_POINTS);
+                if (!(r > clmit && g > clmit && b > clmit)) {
+
+                    glVertex2i(WINDOW_OFFSET + 350 + (x * STRETCH), 428 + (y * STRETCH)); // 8 not 7
+                    //300
+                }
+                //glColor3ub(255,0,255);
+                //glVertex2d(512,324);
+                glEnd();
             }
-            //glColor3ub(255,0,255);
-            //glVertex2d(512,324);
-            glEnd();
         }
     }
     return;
@@ -595,7 +597,7 @@ void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int depth[120]) {
     return;
 }
 
-void screen(int v) {
+void drawScreen(int v) {
     int x; int y;
     int* T;
 
@@ -625,17 +627,46 @@ void screen(int v) {
 
 }
 
-void drawSide() {
+void drawSide(Player p) {
     int x; int y;
+    int* T = T_HEART_1;
 
     for (y = 0; y < SCREEN_HEIGHT; y++) {
         for (x = 0; x < SIDE_ADD; x++) {
             glPointSize(STRETCH);
-            glColor3ub(255, 0, 120);
+            glColor3ub(30, 30, 30);
             glBegin(GL_POINTS);
             glVertex2d((x + (SCREEN_WIDTH - SIDE_ADD)), y);
             glVertex2d(x, y);
             glEnd();
+        }
+    }
+    if (p.heartCounter > 0) {
+        int offsetX = 0;
+        int offsetY = 0;
+        for (int i = 0; i < p.heartCounter; i++) {
+            if (i >= 6) {
+                offsetX = 352;
+                offsetY = i - 6;
+            }
+            else {
+                offsetX = 0;
+                offsetY = i;
+            }
+            for (y = 0; y < 32; y++) {
+                for (x = 0; x < 32; x++) {
+                    int pixel = (32 * y * 3) + (x * 3);
+                    int r = T[pixel]; int g = T[pixel + 1]; int b = T[pixel + 2];
+                    if (!(r > 200 && g > 200)) {
+                        glPointSize(STRETCH);
+                        glColor3ub(r, g, b);
+                        glBegin(GL_POINTS);
+                        glVertex2d((offsetX + 2 + x) * 3, (32*offsetY + 5 +  y) * 3);
+                        glEnd();
+                    }
+
+                }
+            }
         }
     }
     
