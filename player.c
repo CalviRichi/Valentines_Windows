@@ -3,8 +3,8 @@
 static int b_x, b_x_add, b_x_sub, b_y, b_y_add, b_y_sub;
 static int beginPosX, beginPosY, endPosX, endPosY;
 
-void shootGun(Sprite * s, Player p, int bTravel, int * flashTimer) {
-    if (p.hasGun) {
+void shootGun(Sprite * s, Player * p, int bTravel, int * flashTimer) {
+    if (p->hasGun) {
         PlaySound(TEXT("dependencies/assets/gunshot.wav"), NULL, SND_FILENAME | SND_ASYNC);
         while (1) {
             bulletScan(s, p, bTravel, flashTimer);
@@ -39,8 +39,9 @@ void drawBullet() {
     glEnd();
 }
 
-void bulletScan(Sprite * s, Player p, int bTravel, int * flashTimer) {
+void bulletScan(Sprite * s, Player * pl, int bTravel, int * flashTimer) {
     //printf("pdx: %f\npdy: %f\n", pdX, pdY);
+    Player p = *pl;
     
     float px = fabs(p.pdX), py = fabs(p.pdY);
     float mag = (int)sqrt((px*px) + (py*py));
@@ -54,7 +55,7 @@ void bulletScan(Sprite * s, Player p, int bTravel, int * flashTimer) {
         b_x_add = b_x+8; b_x_sub = b_x-8;
         b_y_add = b_y+8; b_y_sub = b_y-8;
         
-        if (s != NULL && s->state == 1) {
+        if (s != NULL && s->state == 1 && s->type == 1) {
         if ((s->x < b_x_add && s->x > b_x_sub) && (s->y < b_y_add && s->y > b_y_sub)) {
             s->health--;
             //printf("sprite health: %d\n", s->health);
@@ -63,9 +64,13 @@ void bulletScan(Sprite * s, Player p, int bTravel, int * flashTimer) {
             // this really should take in the frame rate instead
             if (s->health <= 0 && s->state == 1) {
                 s->state = 0; // turn the sprite off
-                //printf("state: %d\n", s->state);
+                pl->heartCounter++; // give the player one heart
+
+                // Play an enemy death sound
+
+               
                 *flashTimer += 2000/div;
-                //printf("hi\n");
+              
             }
             else if (s->health > 0) {
                 *flashTimer += 2000/div;
@@ -301,15 +306,21 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
         }
         
         if (m->map[ipy_add_yo*MAP_X+ipx_add_xo] == 4) {
-            m->map[ipy_add_yo*MAP_X+ipx_add_xo] = 0;
+            if (p->heartCounter > 1) {
+                m->map[ipy_add_yo * MAP_X + ipx_add_xo] = 0;
+            }
+            else {
+                printf("\n-You do not have enough hearts to open this door!-\n");
+            }
         }
+        *buttonBuffer ^= E_DOWN;
         
 
     }
 
     if (*buttonBuffer & COMMA_DOWN) {
         *buttonBuffer ^= COMMA_DOWN;
-        shootGun(s, *p, bTravel, flashTimer);// Sprite * s, Player p, int bTravel, int * flashTimer
+        shootGun(s, p, bTravel, flashTimer);// Sprite * s, Player p, int bTravel, int * flashTimer
     }
     else if (*buttonBuffer & R_DOWN) {
     // when sprites are a linked list, the head will be passed as an argument

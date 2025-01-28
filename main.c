@@ -15,7 +15,7 @@ typedef enum {
     PLAYING_GAME,
     END_SCREEN
 } State; 
-static State gamestate = PLAYING_GAME;
+static State gamestate = TITLE_SCREEN;
 
 static enum
 { // enum used in the handle keys function
@@ -39,6 +39,8 @@ static char bulletTravel = FALSE; // this could be replaced with flashtimer
 
 static int depth[120];
 
+static char tutorial = TRUE;
+
 void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (action == GLFW_PRESS)
@@ -48,7 +50,17 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
         case GLFW_KEY_ESCAPE:
             if (gamestate == PLAYING_GAME) gamestate = TITLE_SCREEN;
             else if (gamestate == TITLE_SCREEN) glfwSetWindowShouldClose(window, GLFW_TRUE);
-            break;    
+            break;
+        case GLFW_KEY_ENTER:
+            if (gamestate == TITLE_SCREEN) { 
+                gamestate = PLAYING_GAME; 
+                if (tutorial) {
+                    printf("\n---Press 'W' to move forward and 'S' to move back---\n");
+                    printf("---Press 'A' and 'D' to look left and right---\n");
+                    tutorial = FALSE;
+                }
+            }
+            break;
         case W:
             buttonBuffer ^= W_DOWN;
             break;
@@ -108,7 +120,7 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
 void levelInit(Sprite ** s) { 
     Sprite* sp = *s;
     sp = newSprite(1, 2, 1, 3, 96, 96, -5);
-    sp->next = newSprite(1, 2, 1, 3, 380, 418, -5);
+    sp->next = newSprite(1, 1, 13, 3, 380, 418, -20); // fruity
     sp->next->previous = sp;
     sp->next->next = newSprite(1, 2, 1, 3, 160, 120, -5);
     sp->next->next->previous = sp->next;
@@ -192,16 +204,12 @@ int main()
     double lastTime = glfwGetTime();
     double currentTime;
     double deltaTime;
-
-    
-
-    /*
-    the main test:
-    create a 
-    */
-
+   
     double animation = 0;
 
+    printf("Welcome to the game!!!\n\n");
+    printf("---Press 'Enter' to start or press 'Esc' to exit the game---\n");
+   
     // GAME LOOP
 
     while (!glfwWindowShouldClose(window))

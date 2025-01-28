@@ -553,6 +553,9 @@ void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int depth[120]) {
                 case 12:
                     t = T_HEART_1;
                     break;
+                case 13:
+                    t = T_FRUITY;
+                    break;
                 default:
                     t = T_FRUITY;
                     break;

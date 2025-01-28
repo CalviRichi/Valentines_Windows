@@ -1,5 +1,8 @@
 #include "game_types.h"
 
+static float interact = 0;
+#define ATTACK_RATE 3
+
 Sprite *newSprite(int state, int type, int map, int health, float x, float y, float z) {
     Sprite *spriteHead = (Sprite*)malloc(sizeof(Sprite));
     if (spriteHead == NULL) {
@@ -101,6 +104,9 @@ void drawSpriteMap(Sprite s) {
 void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
     
     Player p = *pl;
+    if (interact < ATTACK_RATE) {
+        interact += dt;
+    }
 
     if (s->state == 0 || m.map!=m.m[0]) {
         return;
@@ -140,6 +146,14 @@ void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
     }
     if (s->y<p.plY && m.map[spy_add*MAP_X+spx] == 0) {
         s->y+=SPRITE_SPEED*dt;
+    }
+    
+    float d = dist(s->x, s->y, p.plX, p.plY, 0);
+    if (d < 10 && interact > ATTACK_RATE) {
+        if (pl->heartCounter > 0) {
+            pl->heartCounter--;
+        }
+        interact = 0;
     }
 
     return;

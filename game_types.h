@@ -117,9 +117,9 @@ void mapRemove(Map *item, int * dataCopy[ROOM_NUM]);
 
 // ------------- PLAYER FUNCTIONS -- DEFINED WITHIN PLAYER.C
 
-void shootGun(Sprite * s, Player p, int bTravel, int * flashTimer);
+void shootGun(Sprite * s, Player * p, int bTravel, int * flashTimer);
 void drawBullet();
-void bulletScan(Sprite * s, Player p, int bTravel, int * flashTimer);
+void bulletScan(Sprite * s, Player * p, int bTravel, int * flashTimer);
 void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonBuffer, Map * m, int bTravel, int * flashTimer);
 void drawPlayer(Player p);
 
