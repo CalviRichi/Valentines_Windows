@@ -3,18 +3,14 @@
 static int b_x, b_x_add, b_x_sub, b_y, b_y_add, b_y_sub;
 static int beginPosX, beginPosY, endPosX, endPosY;
 
-void shootGun(Sprite * s, Player * p, int bTravel, int * flashTimer) {
+void shootGun(Sprite * s, Player * p, int bTravel, int * flashTimer, Map * m) {
     if (p->hasGun) {
         PlaySound(TEXT("dependencies/assets/gunshot.wav"), NULL, SND_FILENAME | SND_ASYNC);
-        while (1) {
-            bulletScan(s, p, bTravel, flashTimer);
+        while (s) {
+            
+            bulletScan(s, p, bTravel, flashTimer, m);
             //printf("value = %d\n", bTravel);
-            if (s != NULL && s->next != NULL) {
-                s = s->next;
-            }
-            else {
-                break;
-            }
+            s = s->next;
         }
     }
     
@@ -39,9 +35,10 @@ void drawBullet() {
     glEnd();
 }
 
-void bulletScan(Sprite * s, Player * pl, int bTravel, int * flashTimer) {
+void bulletScan(Sprite * s, Player * pl, int bTravel, int * flashTimer, Map * m) {
     //printf("pdx: %f\npdy: %f\n", pdX, pdY);
     Player p = *pl;
+    //printf("SPRITE TYPE: %d, Sprite region: %d\n", s->state, s->region);
     
     float px = fabs(p.pdX), py = fabs(p.pdY);
     float mag = (int)sqrt((px*px) + (py*py));
@@ -55,7 +52,8 @@ void bulletScan(Sprite * s, Player * pl, int bTravel, int * flashTimer) {
         b_x_add = b_x+8; b_x_sub = b_x-8;
         b_y_add = b_y+8; b_y_sub = b_y-8;
         
-        if (s != NULL && s->state == 1 && s->type == 1) {
+        if (s != NULL && s->state == ENEMY && m->map == m->m[s->region]) {
+         
         if ((s->x < b_x_add && s->x > b_x_sub) && (s->y < b_y_add && s->y > b_y_sub)) {
             s->health--;
             //printf("sprite health: %d\n", s->health);
@@ -291,7 +289,7 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
     }
     
     if (*buttonBuffer & E_DOWN) {
-        
+        *buttonBuffer ^= E_DOWN;
         if (xo < 0) {
             xo-=16;
         }
@@ -313,14 +311,12 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
                 printf("\n-You do not have enough hearts to open this door!-\n");
             }
         }
-        *buttonBuffer ^= E_DOWN;
         
-
     }
 
     if (*buttonBuffer & COMMA_DOWN) {
         *buttonBuffer ^= COMMA_DOWN;
-        shootGun(s, p, bTravel, flashTimer);// Sprite * s, Player p, int bTravel, int * flashTimer
+        shootGun(s, p, bTravel, flashTimer, m);// Sprite * s, Player p, int bTravel, int * flashTimer
     }
     else if (*buttonBuffer & R_DOWN) {
     // when sprites are a linked list, the head will be passed as an argument
@@ -328,14 +324,13 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
     
     while (s) {
         //printf("hi\n");
-        if (s->type == 1) {
-            s->state = 1;
-            s->health = 3; // this can't exactly be it, different sprites have different health
+        if (s->health >= NO_HEALTH) {
+            s->state = ENEMY;
+            s->health = ENEMY_HEALTH; // this can't exactly be it, different sprites have different health
         }
-        else if (s->type == 2) {
+        else if (s->health == COLLECTABLE_HEALTH) {
             // CHANGE THIS LATER   
-            s->state = 1;
-            s->health = 3;
+            s->state = COLLECTABLE;
         }
         s = s->next;
     }

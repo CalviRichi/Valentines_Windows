@@ -106,7 +106,7 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
             buttonBuffer ^= D_DOWN;
             break;
         case E:
-            buttonBuffer ^= E_DOWN;
+            //buttonBuffer ^= E_DOWN;
             break;
         case PERIOD:
             buttonBuffer ^= PERIOD_DOWN;
@@ -119,17 +119,17 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
 
 void levelInit(Sprite ** s) { 
     Sprite* sp = *s;
-    sp = newSprite(1, 2, 1, 3, 96, 96, -5);
-    sp->next = newSprite(1, 1, 13, 3, 380, 418, -20); // fruity
+    sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, -5); // heart 1
+    sp->next = newSprite(ENEMY, BOTTOM_LEFT, 13, ENEMY_HEALTH, 380, 418, -20); // fruity
     sp->next->previous = sp;
-    sp->next->next = newSprite(1, 2, 1, 3, 160, 120, -5);
+    sp->next->next = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 160, 120, -5); // heart 2
     sp->next->next->previous = sp->next;
+    sp->next->next->next = newSprite(COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, -5);
+    sp->next->next->next->previous = sp->next->next;
     *s = sp;
 }
 /*
 This requires some refactoring, ideally a map could contain a list of the sprites that will exist per level
-
-ADD SPRITES THAT EXIST ON OTHER MAPS
 */
 
 int main()
@@ -192,7 +192,7 @@ int main()
     headMap->mapC = headMap->c[0];
     headMap->mapF = headMap->f[0];
     // this could be its own function
-
+    
     Player player = {
         .plX = 100,
         .plY = 400,
@@ -208,7 +208,9 @@ int main()
     double animation = 0;
 
     printf("Welcome to the game!!!\n\n");
-    printf("---Press 'Enter' to start or press 'Esc' to exit the game---\n");
+    printf("---Press 'Enter' to start or press 'Esc' to pause the game---\n");
+    printf("---(press 'Esc' once more in the pause screen to exit)---\n");
+    
    
     // GAME LOOP
 
@@ -268,8 +270,8 @@ int main()
                 drawSide(player);
                 while (hS != NULL) {
                     if (animation == 0) {
-                        if (hS->map == 12) hS->map = 1;
-                        else hS->map += 1;
+                        if (hS->texture == 12) hS->texture = 1;
+                        else hS->texture += 1;
                     }
                     drawSprite(hS, player, *hM, &flashTimer, depth);   
                     hS = hS->next;

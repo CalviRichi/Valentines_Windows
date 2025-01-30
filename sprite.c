@@ -1,9 +1,9 @@
 #include "game_types.h"
 
 static float interact = 0;
-#define ATTACK_RATE 3
+#define ATTACK_RATE 2.5
 
-Sprite *newSprite(int state, int type, int map, int health, float x, float y, float z) {
+Sprite *newSprite(SPRITE_TYPE state, int region, int texture, int health, float x, float y, float z) {
     Sprite *spriteHead = (Sprite*)malloc(sizeof(Sprite));
     if (spriteHead == NULL) {
         printf("Malloc failed!\n");
@@ -13,8 +13,8 @@ Sprite *newSprite(int state, int type, int map, int health, float x, float y, fl
     spriteHead->previous = NULL;
 
     spriteHead->state = state;
-    spriteHead->type = type;
-    spriteHead->map = map;
+    spriteHead->region = region;
+    spriteHead->texture = texture;
     spriteHead->health = health;
     spriteHead->x = x;
     spriteHead->y = y;
@@ -25,7 +25,7 @@ Sprite *newSprite(int state, int type, int map, int health, float x, float y, fl
     return spriteHead;
 }
 
-Sprite *spriteAdd(Sprite * tail, int state, int type, int map, int health, float x, float y, float z) {
+Sprite *spriteAdd(Sprite * tail, SPRITE_TYPE state, int region, int texture, int health, float x, float y, float z) {
     Sprite * newSprite = (Sprite*)malloc(sizeof(Sprite));
 
     if (newSprite == NULL) {
@@ -36,8 +36,8 @@ Sprite *spriteAdd(Sprite * tail, int state, int type, int map, int health, float
     newSprite->previous = tail;
 
     newSprite->state = state;
-    newSprite->type = type;
-    newSprite->map = map;
+    newSprite->region = region;
+    newSprite->texture = texture;
     newSprite->health = health;
     newSprite->x = x;
     newSprite->y = y;
@@ -67,8 +67,8 @@ void spriteRemove(Sprite * item, Sprite * sCopy, Sprite ** headSprite) {
     if (sCopy != NULL) {
         sCopy->health = item->health;
         sCopy->state = item->state;
-        sCopy->map = item->map;
-        sCopy->type = item->type;
+        sCopy->texture = item->texture;
+        sCopy->region = item->region;
         sCopy->x = item->x;
         sCopy->y = item->y;
         sCopy->z = item->z;
@@ -108,11 +108,11 @@ void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
         interact += dt;
     }
 
-    if (s->state == 0 || m.map!=m.m[0]) {
+    if (s->state == OFF || m.map!=m.m[s->region]) { // m.map!=m.m[s->region]
         return;
     }
 
-    if (s->type == 1) { // if it is an enemy
+    if (s->state == ENEMY) { // if it is an enemy
 
     int spx = ((int)s->x)>>6, spy = ((int)s->y)>>6; // bitshifting right by 6 is the same as dividing by 64
     int spx_add = ((int)s->x+5)>>6, spy_add = ((int)s->y+5)>>6;
@@ -160,7 +160,7 @@ void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
 
     }
 
-    if (s->type == 2) {
+    if (s->state == COLLECTABLE) {
         /*
         Code for detecting when the player has intersected with the sprite
         Could include a sound effect
@@ -169,7 +169,7 @@ void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
         float x1 = s->x - p.plX; float y1 = s->y - p.plY;
         float d = sqrt(x1*x1 + y1*y1);
         if (d < 10) {
-            s->state = 0;
+            s->state = OFF;
             if (pl->heartCounter < 12) pl->heartCounter++;
             PlaySound(TEXT("dependencies/assets/coin.wav"), NULL, SND_FILENAME | SND_ASYNC);
         }

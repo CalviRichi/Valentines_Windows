@@ -91,12 +91,32 @@ typedef struct {
 
 // ---------- SPRITE ---------------
 
+typedef enum {
+    OFF = 0,
+    ENEMY,
+    COLLECTABLE
+} SPRITE_TYPE;
+
+enum HEALTH_INFO {
+    NO_HEALTH = 0,
+    ENEMY_HEALTH = 3,
+    COLLECTABLE_HEALTH = -1
+};
+
+typedef enum {
+    BOTTOM_LEFT = 0,
+    BOTTOM_RIGHT,
+    TOP_RIGHT,
+    TOP_LEFT
+} REGION;
+
 typedef struct Sprite {
     // another doubly linked list
     struct Sprite * previous; 
-    int type; // type of sprite (frutiy or heart)
-    int state; // on or off (state 2 might be like infinite health or something)
-    int map; // what map is the sprite valid on
+    REGION region; // Where on the map the sprite is
+    SPRITE_TYPE state; // describes whether sprite is "active" -> state > 0
+                       // as well as the type of sprite -> enemy, collectable, etc...
+    int texture; // What texture is displayed
     float x, y, z; // position for rendering
     int health; // self explanatory 
     struct Sprite * next;
@@ -117,16 +137,16 @@ void mapRemove(Map *item, int * dataCopy[ROOM_NUM]);
 
 // ------------- PLAYER FUNCTIONS -- DEFINED WITHIN PLAYER.C
 
-void shootGun(Sprite * s, Player * p, int bTravel, int * flashTimer);
+void shootGun(Sprite * s, Player * p, int bTravel, int * flashTimer, Map * m);
 void drawBullet();
-void bulletScan(Sprite * s, Player * p, int bTravel, int * flashTimer);
+void bulletScan(Sprite * s, Player * p, int bTravel, int * flashTimer, Map * m);
 void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonBuffer, Map * m, int bTravel, int * flashTimer);
 void drawPlayer(Player p);
 
 // ------------- SPRITE FUNCTIONS -- DEFINED WITHIN SPRITE.C
 
-Sprite *newSprite(int state, int type, int map, int health, float x, float y, float z);
-Sprite *spriteAdd(Sprite * tail, int state, int type, int map, int health, float x, float y, float z);
+Sprite *newSprite(SPRITE_TYPE state, int region, int texture, int health, float x, float y, float z);
+Sprite *spriteAdd(Sprite * tail, SPRITE_TYPE state, int region, int texture, int health, float x, float y, float z);
 void spriteRemove(Sprite * item, Sprite * sCopy, Sprite ** headSprite);
 void drawSpriteMap(Sprite s);
 void drawSprite(Sprite * sp, Player p, Map m, int * flashTimer, int depth[120]);

@@ -455,7 +455,7 @@ void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int depth[120]) {
     float scalingFactorX = (int)SCALE_X / (2 * tan(60 * DR / 2));
     float scalingFactorY = (int)SCALE_Y / (2 * tan(60 * DR / 2));
 
-    if (sp->state == 0 || m.map != m.m[0]) {
+    if (sp->state == OFF || m.map != m.m[sp->region]) {
         if (*flashTimer == 0) {
             //spriteRemove(&sp, NULL); // this causes a crash
             // memory is being freed, but sp is not set to null
@@ -516,7 +516,7 @@ void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int depth[120]) {
 
                 int* t;
 
-                switch (s.map) {
+                switch (s.texture) {
                 case 1:
                     t = T_HEART_1;
                     break;
