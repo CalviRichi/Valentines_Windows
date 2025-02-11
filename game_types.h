@@ -4,9 +4,11 @@
 //#include "dependencies/assets/textures.h"
 #include "dependencies/include/glad/glad.h"
 #include "dependencies/include/glfw3.h"
-#include <Windows.h>
-#include <mmsystem.h>
-#pragma comment(lib, "winmm.lib")
+#include "dependencies/include/SDL2/include/SDL.h"
+#include "dependencies/include/SDL2_mixer/include/SDL_mixer.h"
+//#include <Windows.h>
+//#include <mmsystem.h>
+//#pragma comment(lib, "winmm.lib")
 
 #ifndef GAME_TYPES_H
 #define GAME_TYPES_H
@@ -17,8 +19,9 @@
 #define TRUE 1 // boolean value true
 #define FALSE 0 // boolean value false
 
-#define SIDE_ADD 100
-#define WINDOW_OFFSET 100 // offset for drawing the screen
+#define SHIFT 4
+#define SIDE_ADD 100 // 100
+#define WINDOW_OFFSET 100 // 100 offset for drawing the screen
 #define SCREEN_WIDTH (WINDOW_OFFSET + 960 + SIDE_ADD)//960 -- 
 #define SCREEN_HEIGHT 640//640 or for a more "traditional" ratio, 512
 #define STRETCH 8 // the width of each pixel
@@ -57,7 +60,8 @@ typedef enum
     E_DOWN = 0x10, 
     COMMA_DOWN = 0x20,
     PERIOD_DOWN = 0x40,
-    R_DOWN = 0x80
+    R_DOWN = 0x80,
+    DOOR_SLIDE = 0x100
 } ACTION_KEYS;
 
 // ----------- MAPS -------------
@@ -128,6 +132,19 @@ static float dist(float ax, float ay, float bx, float by, float ang) {
     return (sqrt((bx - ax) * (bx - ax) + (by - ay) * (by - ay)));
 }
 
+static int playSoundEffect(char* s) {
+
+    Mix_Chunk* sound = Mix_LoadWAV(s);
+    if (!sound) {
+        printf("Failed to load sound: %s\n", Mix_GetError());
+        return 1;
+    }
+
+    // Play the sound on the first available channel (-1)
+    Mix_PlayChannel(-1, sound, 0);
+    return 0;
+}
+
 // ------------- MAP FUNCTIONS -- DEFINED WITHIN MAP.C
 
 void drawMap2D(Map m);
@@ -140,7 +157,7 @@ void mapRemove(Map *item, int * dataCopy[ROOM_NUM]);
 void shootGun(Sprite * s, Player * p, int bTravel, int * flashTimer, Map * m);
 void drawBullet();
 void bulletScan(Sprite * s, Player * p, int bTravel, int * flashTimer, Map * m);
-void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonBuffer, Map * m, int bTravel, int * flashTimer);
+int movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonBuffer, Map * m, int bTravel, int * flashTimer);
 void drawPlayer(Player p);
 
 // ------------- SPRITE FUNCTIONS -- DEFINED WITHIN SPRITE.C

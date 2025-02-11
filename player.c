@@ -5,7 +5,9 @@ static int beginPosX, beginPosY, endPosX, endPosY;
 
 void shootGun(Sprite * s, Player * p, int bTravel, int * flashTimer, Map * m) {
     if (p->hasGun) {
-        PlaySound(TEXT("dependencies/assets/gunshot.wav"), NULL, SND_FILENAME | SND_ASYNC);
+        if (playSoundEffect("dependencies/assets/gunshot.wav")) {
+            printf("something went wrong!\n");
+        }
         while (s) {
             
             bulletScan(s, p, bTravel, flashTimer, m);
@@ -84,7 +86,7 @@ void bulletScan(Sprite * s, Player * pl, int bTravel, int * flashTimer, Map * m)
     //printf("begin x: %d, begin y: %d\nend x: %d, end y: %d\n", beginPosX, beginPosY, endPosX, endPosY);
 }
 
-void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonBuffer, Map * m, int bTravel, int * flashTimer)
+int movePlayer(Player * p, float deltaTime, Sprite * s, unsigned int * buttonBuffer, Map * m, int bTravel, int * flashTimer)
 {
     int xo;     // position for collision detection
     if (p->pdX<0) {
@@ -130,7 +132,7 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
                     p->plX-=335;
                 }
                 else {
-                    return;
+                    return -1;
                 }
                 
                 if (m->map == m->m[0]) {
@@ -147,7 +149,7 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
                     p->plX+=335;
                 }
                 else {
-                    return;
+                    return -1;
                 }
                 //printf("hello\n");
                 if (m->map == m->m[1]) {
@@ -163,7 +165,7 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
                     p->plY-=335;
                 }
                 else {
-                    return;
+                    return -1;
                 }
                 //printf("bye\n");
                 if (m->map == m->m[3]) {
@@ -178,7 +180,7 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
                     p->plY+=335;
                 }
                 else {
-                    return;
+                    return -1;
                 }
                 //printf("goodbye\n");
                 if (m->map == m->m[0]) {
@@ -216,7 +218,7 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
                     p->plX-=335;
                 }
                 else {
-                    return;
+                    return -1;
                 }
                 //printf("hi\n");
                 if (m->map == m->m[0]) {
@@ -232,7 +234,7 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
                     p->plX+=335;
                 }
                 else {
-                    return;
+                    return -1;
                 }
                 //printf("hello\n");
                 if (m->map == m->m[1]) {
@@ -248,7 +250,7 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
                     p->plY-=335;
                 }
                 else {
-                    return;
+                    return -1;
                 }
                 //printf("bye\n");
                 if (m->map == m->m[3]) {
@@ -263,7 +265,7 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
                     p->plY+=335;
                 }
                 else {
-                    return;
+                    return -1;
                 }
                 
                 //printf("goodbye\n");
@@ -304,8 +306,24 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
         }
         
         if (m->map[ipy_add_yo*MAP_X+ipx_add_xo] == 4) {
+            /*
+            * Save "ipy_add_yo*MAP_X+ipx_add_xo" as a variable
+            * each time it will
+            This will need to get changed in some sort of way
+            Variable called open door (can be put inside button buffer
+            gets called in this function (since this function only runs 
+            once. 
+            Once the variable is turned on it will be controlled by the 
+            animation variable
+            */
+            
+            int doorValue = ipy_add_yo * MAP_X + ipx_add_xo;
             if (p->heartCounter > 1) {
-                m->map[ipy_add_yo * MAP_X + ipx_add_xo] = 0;
+                //printf("opening door, %d\n", m->map[doorValue]);
+                *buttonBuffer ^= DOOR_SLIDE;
+                
+                return doorValue;
+                //m->map[ipy_add_yo * MAP_X + ipx_add_xo] = 0;
             }
             else {
                 printf("\n-You do not have enough hearts to open this door!-\n");
@@ -313,7 +331,12 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
         }
         
     }
-
+    if (*buttonBuffer & PERIOD_DOWN) {
+        *buttonBuffer ^= PERIOD_DOWN;
+        if (playSoundEffect("dependencies/assets/sus.wav")) {
+            printf("something went wrong!\n");
+        }
+    }
     if (*buttonBuffer & COMMA_DOWN) {
         *buttonBuffer ^= COMMA_DOWN;
         shootGun(s, p, bTravel, flashTimer, m);// Sprite * s, Player p, int bTravel, int * flashTimer
@@ -340,7 +363,7 @@ void movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonB
 
     //printf("player x: %d, player y: %d, %f\n", xo, yo, pa);
     //printf("pa = %f\n",pa);
-    
+    return -1;
 }
 
 void drawPlayer(Player p)

@@ -1,23 +1,31 @@
 #include "render.h"
 #include "dependencies/assets/textures.h"
 #include "dependencies/assets/title.ppm"
+#include "dependencies/assets/pinkgun.ppm"
+#include "dependencies/assets/door1.ppm"
+#include "dependencies/assets/door2.ppm"
+#include "dependencies/assets/door3.ppm"
+#include "dependencies/assets/door4.ppm"
+#include "dependencies/assets/door5.ppm"
+#include "dependencies/assets/door6.ppm"
+#include "dependencies/assets/hallway.ppm"
 
 void drawGun(Player p) {
     if (p.hasGun) {
-        int clmit = 181;
+        int clmit = 220;
         for (int y = 0; y < 32; y++) {
             for (int x = 0; x < 32; x++) {
                 int pixel = (32 * y * 3) + (x * 3);
-                int r = T_GUN[pixel];
-                int g = T_GUN[pixel + 1];
-                int b = T_GUN[pixel + 2];
+                int r = T_NEWGUN[pixel];
+                int g = T_NEWGUN[pixel + 1];
+                int b = T_NEWGUN[pixel + 2];
 
                 glPointSize(STRETCH);
                 glColor3ub(r, g, b);
                 glBegin(GL_POINTS);
                 if (!(r > clmit && g > clmit && b > clmit)) {
 
-                    glVertex2i(WINDOW_OFFSET + 350 + (x * STRETCH), 428 + (y * STRETCH)); // 8 not 7
+                    glVertex2i(WINDOW_OFFSET + 350 + (x*7), 435 + (y*7)); // 8 not 7
                     //300
                 }
                 //glColor3ub(255,0,255);
@@ -221,11 +229,29 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
         case 1:
             tile = T_BRICKS_2;
             break;
-        case 2:
-            tile = T_MALANE2;
+        case 4:
+            tile = T_DOOR1;
             break;
         case 5:
-            tile = T_LEIGHA;
+            tile = T_HALLWAY;
+            break;
+        case 6:
+            tile = T_DOOR1;
+            break;
+        case 7:
+            tile = T_DOOR2;
+            break;
+        case 8:
+            tile = T_DOOR3;
+            break;
+        case 9:
+            tile = T_DOOR4;
+            break;
+        case 10:
+            tile = T_DOOR5;
+            break;
+        case 11:
+            tile = T_DOOR6;
             break;
         default:
             tile = T_MALANE2;
@@ -268,7 +294,6 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
 
         if (r == 60) {
             *bTravel = (int)distT;
-            
         }
 
         int lineH, lineO; // declared
@@ -339,12 +364,20 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
             int blue = tile[pixel + 2];
             glPointSize(STRETCH);
 
-            //if (!(red == 255) && !(green == 255) && !(blue == 255)) {
-            glColor3ub(red, green, blue);
-            glBegin(GL_POINTS);
-            glVertex2i(r * STRETCH + WINDOW_OFFSET, y + lineO);
-            glEnd();
-            //}
+            if (hmt == 4 || hmt > 5) {
+                if (!(red == 255) || !(green == 255) || !(blue == 255)) {
+                    glColor3ub(red, green, blue);
+                    glBegin(GL_POINTS);
+                    glVertex2i(r * STRETCH + WINDOW_OFFSET + SHIFT, y + lineO);
+                    glEnd();
+                }
+            }
+            else {
+                glColor3ub(red, green, blue);
+                glBegin(GL_POINTS);
+                glVertex2i(r * STRETCH + WINDOW_OFFSET + SHIFT, y + lineO);
+                glEnd();
+            }
 
             ty += ty_step;
         }
@@ -358,9 +391,10 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
             // ra is ray angle
             // plX is player X pos
             // plY is player y pos
-            tx = p.plX / 2 + cos(ra) * 255 * 32 / dx / cos(ca); // 255
-
-            ty = p.plY / 2 + sin(ra) * 255 * 32 / dx / cos(ca);
+            
+            tx = (p.plX / 2) + (cos(ra) * (SCREEN_HEIGHT/2) * 32 / dx / cos(ca)); // 255
+            ty = (p.plY / 2) + (sin(ra) * (SCREEN_HEIGHT/2) * 32 / dx / cos(ca));
+            
             mp = ((int)(ty / 32.0) * MAP_X + (int)(tx / 32.0));
           
             int pixel = (((int)(ty) & 31) * 32 + ((int)(tx) & 31)) * 3;
@@ -417,7 +451,7 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
             glPointSize(STRETCH);
             glColor3ub(red, green, blue);
             glBegin(GL_POINTS);
-            glVertex2i(r * STRETCH + WINDOW_OFFSET, x);
+            glVertex2i(r * STRETCH + WINDOW_OFFSET + SHIFT, x);
             glEnd();
 
             // ceilings
@@ -429,13 +463,15 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
             glPointSize(STRETCH);
             glColor3ub(redC, greenC, blueC);
             glBegin(GL_POINTS);
-            glVertex2i(r * STRETCH + WINDOW_OFFSET, SCREEN_HEIGHT - x);
+            glVertex2i(r * STRETCH + WINDOW_OFFSET+SHIFT, SCREEN_HEIGHT - x);
             glEnd();
 
         
 
 
         }
+
+        
         
         ra += (DR / 2.0); // add one degree to the ray angle 
         if (ra <= 0) {
@@ -450,13 +486,14 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
     return;
 }
 
-void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int depth[120]) {
+void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int dt, int depth[120]) {
 
     float scalingFactorX = (int)SCALE_X / (2 * tan(60 * DR / 2));
     float scalingFactorY = (int)SCALE_Y / (2 * tan(60 * DR / 2));
 
     if (sp->state == OFF || m.map != m.m[sp->region]) {
-        if (*flashTimer == 0) {
+
+        if (*flashTimer == 0 || m.map != m.m[sp->region]) {
             //spriteRemove(&sp, NULL); // this causes a crash
             // memory is being freed, but sp is not set to null
             return;
@@ -567,21 +604,18 @@ void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int depth[120]) {
 
 
                 if (*flashTimer > 0) {
-                   
-                    --*flashTimer;
-                    r = 255;
+                    *flashTimer -= 1;
+                    if (*flashTimer <= 0) *flashTimer = 0;
+                    //printf("Timer: %d\n", *flashTimer);
+                    if (s.state == ENEMY || s.state == OFF) r = 255;
                 }
-                else {
-                    *flashTimer = 0;
-                }
-
-
+                
                 if (!(r == 254) && !(g == 254) && !(b == 254)) { // this means don't draw
 
                     glPointSize(STRETCH);
                     glColor3ub(r, g, b);
                     glBegin(GL_POINTS);
-                    glVertex2d((x * STRETCH) + WINDOW_OFFSET, screenY * STRETCH - y * STRETCH);
+                    glVertex2d((x * STRETCH) + WINDOW_OFFSET + SHIFT, screenY * STRETCH - y * STRETCH);
                     glEnd();
 
                 }
@@ -623,7 +657,7 @@ void drawScreen(int v) {
             glPointSize(STRETCH);
             glColor3ub(red, green, blue);
             glBegin(GL_POINTS);
-            glVertex2d(WINDOW_OFFSET + (x * STRETCH), y * STRETCH);
+            glVertex2d(SHIFT + WINDOW_OFFSET + (x * STRETCH), y * STRETCH);
             glEnd();
         }
     }
@@ -648,9 +682,9 @@ void drawSide(Player p) {
         int offsetX = 0;
         int offsetY = 0;
         for (int i = 0; i < p.heartCounter; i++) {
-            if (i >= 6) {
+            if (i >= 5) {
                 offsetX = 352;
-                offsetY = i - 6;
+                offsetY = i - 5;
             }
             else {
                 offsetX = 0;

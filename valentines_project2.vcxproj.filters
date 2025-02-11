@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="dependencies\lib\glfw3.lib" />
+    <Library Include="dependencies\include\SDL2_mixer\lib\x64\SDL2_mixer.lib" />
+    <Library Include="dependencies\include\SDL2\lib\x64\SDL2.lib" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="dependencies\assets\sus.wav">

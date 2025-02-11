@@ -34,6 +34,7 @@ Sprite *spriteAdd(Sprite * tail, SPRITE_TYPE state, int region, int texture, int
     }
 
     newSprite->previous = tail;
+    newSprite->next = NULL;
 
     newSprite->state = state;
     newSprite->region = region;
@@ -171,7 +172,7 @@ void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
         if (d < 10) {
             s->state = OFF;
             if (pl->heartCounter < 12) pl->heartCounter++;
-            PlaySound(TEXT("dependencies/assets/coin.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            playSoundEffect("dependencies/assets/coin.wav");
         }
        
         return;

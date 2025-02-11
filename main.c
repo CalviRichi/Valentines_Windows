@@ -17,6 +17,8 @@ typedef enum {
 } State; 
 static State gamestate = TITLE_SCREEN;
 
+static int dChange = -1;
+
 static enum
 { // enum used in the handle keys function
     W = 87,
@@ -30,7 +32,7 @@ static enum
 
 } INPUT_KEYS;
 
-static unsigned char buttonBuffer = 0x0;
+static unsigned int buttonBuffer = 0x0;
 // it doesn't matter if it's signed or not but I think it's funny how long the declaration is
 
 static int flashTimer = 0; // this will be kept in main
@@ -52,8 +54,8 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
             else if (gamestate == TITLE_SCREEN) glfwSetWindowShouldClose(window, GLFW_TRUE);
             break;
         case GLFW_KEY_ENTER:
-            if (gamestate == TITLE_SCREEN) { 
-                gamestate = PLAYING_GAME; 
+            if (gamestate == TITLE_SCREEN) {
+                gamestate = PLAYING_GAME;
                 if (tutorial) {
                     printf("\n---Press 'W' to move forward and 'S' to move back---\n");
                     printf("---Press 'A' and 'D' to look left and right---\n");
@@ -80,10 +82,14 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
             buttonBuffer ^= R_DOWN;
             break;
         case COMMA:
-            buttonBuffer ^= COMMA_DOWN;
+            if (gamestate == PLAYING_GAME) {
+                buttonBuffer ^= COMMA_DOWN;
+            }
             break;
         case PERIOD:
-            buttonBuffer ^= PERIOD_DOWN;
+            if (gamestate == PLAYING_GAME) { 
+                buttonBuffer ^= PERIOD_DOWN; 
+            }
             break;
         default:
             break;
@@ -117,25 +123,64 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
     }
 }
 
-void levelInit(Sprite ** s) { 
-    Sprite* sp = *s;
-    sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, -5); // heart 1
-    sp->next = newSprite(ENEMY, BOTTOM_LEFT, 13, ENEMY_HEALTH, 380, 418, -20); // fruity
-    sp->next->previous = sp;
-    sp->next->next = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 160, 120, -5); // heart 2
-    sp->next->next->previous = sp->next;
-    sp->next->next->next = newSprite(COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, -5);
-    sp->next->next->next->previous = sp->next->next;
+void levelInit(Sprite ** s) {
+    
+    Sprite* sp = *s; // create a copy of the head (basically just to avoid dereferencing every time)
+    Sprite* spr; // sprite pointer for the loop
+    // enemy height = -20
+
+    // top left = 96, 96 -- add 64 per square
+
+
+    sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, -5); // BL heart top left
+
+    spr = spriteAdd(sp, COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 355, 418, -5); // BL heart bottom right
+    
+    spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 160, -5); // TL heart top left
+
+    spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 416, -5); // TL heart bottom left
+
+    spr = spriteAdd(spr, ENEMY, TOP_LEFT, 13, ENEMY_HEALTH, 224, 288, -20); // TL enemy middle
+
+    spr = spriteAdd(spr, ENEMY, TOP_RIGHT, 13, ENEMY_HEALTH, 96, 288, -20); // TR enemy left
+
+    spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 1, COLLECTABLE_HEALTH, 96, 416, -5); // TR heart bottom left
+
+    spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 1, COLLECTABLE_HEALTH, 352, 96, -5); // TR heart top tight
+
+    spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 1, COLLECTABLE_HEALTH, 224, 160, -5); // BR left heart
+
+    spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 1, COLLECTABLE_HEALTH, 224, 288, -5); // BR middle heart
+
+    // weapon location bottom right
+
     *s = sp;
 }
+
+void levelWipe() { return; } // will be called when changing maps
 /*
 This requires some refactoring, ideally a map could contain a list of the sprites that will exist per level
 */
+
 
 int main()
 {
     // START INITIALIZATION ------------------------------------
 
+    // AUDIO INIT
+    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+        printf("SDL_Init error: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        printf("Mix_OpenAudio error: %s\n", Mix_GetError());
+        return 1;
+    }
+
+    Mix_Volume(-1, 24);
+
+    // GRAPHICS INIT
     GLFWwindow *window;
     
     if (!glfwInit())
@@ -230,6 +275,7 @@ int main()
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+                drawSide(player);
                 drawScreen(1);
 
                 glfwSwapBuffers(window); // has to be last
@@ -244,7 +290,27 @@ int main()
                 //taking input
                 glfwPollEvents();
                 
-                movePlayer(&player, deltaTime, headSprite, &buttonBuffer, hM, bTravel, &flashTimer);
+                int d = movePlayer(&player, deltaTime, headSprite, &buttonBuffer, hM, bTravel, &flashTimer);
+                if (d != -1) {
+                    dChange = d;
+                    
+                }
+                
+                if (buttonBuffer & DOOR_SLIDE) {
+                    //printf("changed!, %d\n", d);
+                    if (animation == 0) {
+                        if (hM->map[dChange] == 4) {
+                            hM->map[dChange] = 6;
+                        }
+                        else if (hM->map[dChange] == 11) {
+                            hM->map[dChange] = 0;
+                            buttonBuffer ^= DOOR_SLIDE;
+                        }
+                        else {
+                            hM->map[dChange] = hM->map[dChange] + 1;
+                        }
+                    }
+                }
                 //printf("x: %f, y: %f\n", player.plX, player.plY);
                 hS = headSprite;
                 while (hS) {
@@ -273,7 +339,7 @@ int main()
                         if (hS->texture == 12) hS->texture = 1;
                         else hS->texture += 1;
                     }
-                    drawSprite(hS, player, *hM, &flashTimer, depth);   
+                    drawSprite(hS, player, *hM, &flashTimer, &deltaTime, depth);   
                     hS = hS->next;
                 }
 
@@ -334,6 +400,8 @@ int main()
         
     }
 
+    Mix_CloseAudio();
+    SDL_Quit();
     glfwTerminate(); // get rid of the window at the end
 
     return 0;
