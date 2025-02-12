@@ -169,9 +169,14 @@ void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
         */
         float x1 = s->x - p.plX; float y1 = s->y - p.plY;
         float d = sqrt(x1*x1 + y1*y1);
-        if (d < 10) {
+        if (d < 10 && s->health == COLLECTABLE_HEALTH) {
             s->state = OFF;
             if (pl->heartCounter < 12) pl->heartCounter++;
+            playSoundEffect("dependencies/assets/coin.wav");
+        }
+        else if (d < 10 && s->health == (GUN_HEALTH)) {
+            s->state = OFF;
+            pl->hasGun = TRUE;
             playSoundEffect("dependencies/assets/coin.wav");
         }
        

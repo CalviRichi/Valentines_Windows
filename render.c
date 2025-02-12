@@ -1,29 +1,30 @@
 #include "render.h"
 #include "dependencies/assets/textures.h"
 #include "dependencies/assets/title.ppm"
-#include "dependencies/assets/pinkgun.ppm"
-#include "dependencies/assets/door1.ppm"
-#include "dependencies/assets/door2.ppm"
-#include "dependencies/assets/door3.ppm"
-#include "dependencies/assets/door4.ppm"
-#include "dependencies/assets/door5.ppm"
-#include "dependencies/assets/door6.ppm"
-#include "dependencies/assets/hallway.ppm"
 
-void drawGun(Player p) {
+void drawGun(Player p, static unsigned int bb) {
     if (p.hasGun) {
-        int clmit = 220;
+        
         for (int y = 0; y < 32; y++) {
             for (int x = 0; x < 32; x++) {
                 int pixel = (32 * y * 3) + (x * 3);
-                int r = T_NEWGUN[pixel];
-                int g = T_NEWGUN[pixel + 1];
-                int b = T_NEWGUN[pixel + 2];
+                int r; int g; int b;
+                if (!(bb & GUN_FIRE)) {
+                    r = T_PINKGUN_1[pixel];
+                    g = T_PINKGUN_1[pixel + 1];
+                    b = T_PINKGUN_1[pixel + 2];
+                }
+                else {
+                    r = T_PINKGUN_2[pixel];
+                    g = T_PINKGUN_2[pixel + 1];
+                    b = T_PINKGUN_2[pixel + 2];
+                }
+                
 
                 glPointSize(STRETCH);
                 glColor3ub(r, g, b);
                 glBegin(GL_POINTS);
-                if (!(r > clmit && g > clmit && b > clmit)) {
+                if (!(r==255) || !(g==0) || !(b==255)) {
 
                     glVertex2i(WINDOW_OFFSET + 350 + (x*7), 435 + (y*7)); // 8 not 7
                     //300
@@ -591,10 +592,70 @@ void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int dt, int depth[
                     t = T_HEART_1;
                     break;
                 case 13:
-                    t = T_FRUITY;
+                    t = T_CUPID;
+                    break;
+                case 14:
+                    t = T_GUNITEM_1;
+                    break;
+                case 15:
+                    t = T_GUNITEM_2;
+                    break;
+                case 16:
+                    t = T_GUNITEM_3;
+                    break;
+                case 17:
+                    t = T_GUNITEM_4;
+                    break;
+                case 18:
+                    t = T_GUNITEM_5;
+                    break;
+                case 19:
+                    t = T_GUNITEM_6;
+                    break;
+                case 20:
+                    t = T_GUNITEM_7;
+                    break;
+                case 21:
+                    t = T_GUNITEM_8;
+                    break;
+                case 22:
+                    t = T_GUNITEM_9;
+                    break;
+                case 23:
+                    t = T_GUNITEM_10;
+                    break;
+                case 24:
+                    t = T_GUNITEM_11;
+                    break;
+                case 25:
+                    t = T_GUNITEM_12;
+                    break;
+                case 26:
+                    t = T_GUNITEM_13;
+                    break;
+                case 27:
+                    t = T_GUNITEM_14;
+                    break;
+                case 28:
+                    t = T_GUNITEM_15;
+                    break;
+                case 29:
+                    t = T_GUNITEM_16;
+                    break;
+                case 30:
+                    t = T_GUNITEM_17;
+                    break;
+                case 31:
+                    t = T_GUNITEM_18;
+                    break;
+                case 32:
+                    t = T_GUNITEM_19;
+                    break;
+                case 33:
+                    t = T_GUNITEM_20;
                     break;
                 default:
-                    t = T_FRUITY;
+                    t = T_CUPID;
                     break;
                 }
 
@@ -610,14 +671,15 @@ void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int dt, int depth[
                     if (s.state == ENEMY || s.state == OFF) r = 255;
                 }
                 
-                if (!(r == 254) && !(g == 254) && !(b == 254)) { // this means don't draw
-
-                    glPointSize(STRETCH);
-                    glColor3ub(r, g, b);
-                    glBegin(GL_POINTS);
-                    glVertex2d((x * STRETCH) + WINDOW_OFFSET + SHIFT, screenY * STRETCH - y * STRETCH);
-                    glEnd();
-
+                if (!(r == 255) || !(g == 0) || !(b == 255)) { // this means don't draw
+                    if (!(r == 254) && !(g == 254) && !(b == 254)){
+                        glPointSize(STRETCH);
+                        glColor3ub(r, g, b);
+                        glBegin(GL_POINTS);
+                        glVertex2d((x * STRETCH) + WINDOW_OFFSET + SHIFT, screenY * STRETCH - y * STRETCH);
+                        glVertex2d((x * STRETCH) + WINDOW_OFFSET + SHIFT, screenY * STRETCH - y * STRETCH);
+                        glEnd();
+                    }
                 }
 
                 t_y -= t_y_step;

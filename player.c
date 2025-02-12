@@ -339,7 +339,9 @@ int movePlayer(Player * p, float deltaTime, Sprite * s, unsigned int * buttonBuf
     }
     if (*buttonBuffer & COMMA_DOWN) {
         *buttonBuffer ^= COMMA_DOWN;
-        shootGun(s, p, bTravel, flashTimer, m);// Sprite * s, Player p, int bTravel, int * flashTimer
+        if (*buttonBuffer & GUN_FIRE) {
+            shootGun(s, p, bTravel, flashTimer, m);// Sprite * s, Player p, int bTravel, int * flashTimer
+        }
     }
     else if (*buttonBuffer & R_DOWN) {
     // when sprites are a linked list, the head will be passed as an argument
@@ -351,7 +353,7 @@ int movePlayer(Player * p, float deltaTime, Sprite * s, unsigned int * buttonBuf
             s->state = ENEMY;
             s->health = ENEMY_HEALTH; // this can't exactly be it, different sprites have different health
         }
-        else if (s->health == COLLECTABLE_HEALTH) {
+        else if (s->health == COLLECTABLE_HEALTH || s->health == GUN_HEALTH) {
             // CHANGE THIS LATER   
             s->state = COLLECTABLE;
         }

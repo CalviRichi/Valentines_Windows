@@ -57,11 +57,12 @@ typedef enum
     A_DOWN = 0x2,
     S_DOWN = 0x4,
     D_DOWN = 0x8,
-    E_DOWN = 0x10, 
+    E_DOWN = 0x10,
     COMMA_DOWN = 0x20,
     PERIOD_DOWN = 0x40,
     R_DOWN = 0x80,
-    DOOR_SLIDE = 0x100
+    DOOR_SLIDE = 0x100,
+    GUN_FIRE = 0x200
 } ACTION_KEYS;
 
 // ----------- MAPS -------------
@@ -104,7 +105,9 @@ typedef enum {
 enum HEALTH_INFO {
     NO_HEALTH = 0,
     ENEMY_HEALTH = 3,
-    COLLECTABLE_HEALTH = -1
+    COLLECTABLE_HEALTH = -1,
+    GUN_HEALTH = -2
+
 };
 
 typedef enum {

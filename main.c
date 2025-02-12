@@ -2,6 +2,9 @@
 #include "maps.h"
 #include "render.h"
 
+#define ENEMY_HEIGHT -5
+#define HEART_HEIGHT -5
+
 //#define DEBUG
 
 #ifdef DEBUG
@@ -84,6 +87,7 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
         case COMMA:
             if (gamestate == PLAYING_GAME) {
                 buttonBuffer ^= COMMA_DOWN;
+                buttonBuffer ^= GUN_FIRE;
             }
             break;
         case PERIOD:
@@ -114,6 +118,9 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
         case E:
             //buttonBuffer ^= E_DOWN;
             break;
+        case COMMA:
+            //buttonBuffer ^= COMMA_DOWN;
+            break;
         case PERIOD:
             buttonBuffer ^= PERIOD_DOWN;
             break;
@@ -132,25 +139,27 @@ void levelInit(Sprite ** s) {
     // top left = 96, 96 -- add 64 per square
 
 
-    sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, -5); // BL heart top left
+    sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
 
-    spr = spriteAdd(sp, COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 355, 418, -5); // BL heart bottom right
+    spr = spriteAdd(sp, COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 355, 418, HEART_HEIGHT); // BL heart bottom right
     
-    spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 160, -5); // TL heart top left
+    spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 160, HEART_HEIGHT); // TL heart top left
 
-    spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 416, -5); // TL heart bottom left
+    spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 416, HEART_HEIGHT); // TL heart bottom left
 
-    spr = spriteAdd(spr, ENEMY, TOP_LEFT, 13, ENEMY_HEALTH, 224, 288, -20); // TL enemy middle
+    spr = spriteAdd(spr, ENEMY, TOP_LEFT, 13, ENEMY_HEALTH, 224, 288, ENEMY_HEIGHT); // TL enemy middle
 
-    spr = spriteAdd(spr, ENEMY, TOP_RIGHT, 13, ENEMY_HEALTH, 96, 288, -20); // TR enemy left
+    spr = spriteAdd(spr, ENEMY, TOP_RIGHT, 13, ENEMY_HEALTH, 96, 288, ENEMY_HEIGHT); // TR enemy left
 
-    spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 1, COLLECTABLE_HEALTH, 96, 416, -5); // TR heart bottom left
+    spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 1, COLLECTABLE_HEALTH, 96, 416, HEART_HEIGHT); // TR heart bottom left
 
-    spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 1, COLLECTABLE_HEALTH, 352, 96, -5); // TR heart top tight
+    spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 1, COLLECTABLE_HEALTH, 352, 96, HEART_HEIGHT); // TR heart top tight
 
-    spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 1, COLLECTABLE_HEALTH, 224, 160, -5); // BR left heart
+    spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 1, COLLECTABLE_HEALTH, 224, 160, HEART_HEIGHT); // BR left heart
 
-    spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 1, COLLECTABLE_HEALTH, 224, 288, -5); // BR middle heart
+    spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 1, COLLECTABLE_HEALTH, 224, 288, HEART_HEIGHT); // BR middle heart
+
+    spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 14, GUN_HEALTH, 96, 160, HEART_HEIGHT);
 
     // weapon location bottom right
 
@@ -243,7 +252,7 @@ int main()
         .plY = 400,
         .pdX = (float)cos(0.0001) * VIEWING_ANGLE_CHANGE,
         .pdY = (float)sin(0.0001) * VIEWING_ANGLE_CHANGE,
-        .hasGun = TRUE // will eventually start as false
+        .hasGun = FALSE // will eventually start as false
     };
 
     double lastTime = glfwGetTime();
@@ -251,6 +260,7 @@ int main()
     double deltaTime;
    
     double animation = 0;
+    int secondAnimation = 0;
 
     printf("Welcome to the game!!!\n\n");
     printf("---Press 'Enter' to start or press 'Esc' to pause the game---\n");
@@ -338,6 +348,20 @@ int main()
                     if (animation == 0) {
                         if (hS->texture == 12) hS->texture = 1;
                         else hS->texture += 1;
+
+                        if (hS->texture == 33) { 
+                            hS->texture = 14; 
+                            hS->z = HEART_HEIGHT;
+                        }
+                        else if (hS->texture >= 14){ 
+                            hS->texture += 1; 
+                            if (hS->texture % 10 < 5) {
+                                hS->z -= 1;
+                            }
+                            if (hS->texture % 10 > 5) {
+                                hS->z += 1;
+                            }
+                        }
                     }
                     drawSprite(hS, player, *hM, &flashTimer, &deltaTime, depth);   
                     hS = hS->next;
@@ -385,8 +409,16 @@ int main()
 
                 */   
                 //}
-
-                drawGun(player);
+                
+                drawGun(player, buttonBuffer);
+                if (animation == 0 && buttonBuffer & GUN_FIRE) {
+                    secondAnimation += 1;
+                    if (secondAnimation == 2) {
+                        buttonBuffer ^= GUN_FIRE;
+                        secondAnimation = 0;
+                    }
+                    
+                }
                 glfwSwapBuffers(window); 
 
                 break;
