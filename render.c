@@ -1,6 +1,7 @@
 #include "render.h"
 #include "dependencies/assets/textures.h"
 #include "dependencies/assets/title.ppm"
+#include "dependencies/assets/cover.ppm"
 
 void drawGun(Player p, static unsigned int bb) {
     if (p.hasGun) {
@@ -228,31 +229,46 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
         switch (hmt) {
 
         case 1:
-            tile = T_BRICKS_2;
+            tile = T_WOOD_PLANKS;
+            break;
+        case 2:
+            tile = T_EXIT;
+            break;
+        case 3:
+            tile = T_DOOR_4_1;
             break;
         case 4:
-            tile = T_DOOR1;
+            tile = T_DOOR_2_1;
             break;
         case 5:
             tile = T_HALLWAY;
             break;
         case 6:
-            tile = T_DOOR1;
+            tile = T_DOOR_2_1;
             break;
         case 7:
-            tile = T_DOOR2;
+            tile = T_DOOR_2_2;
             break;
         case 8:
-            tile = T_DOOR3;
+            tile = T_DOOR_2_3;
             break;
         case 9:
-            tile = T_DOOR4;
+            tile = T_DOOR_FINAL_1;
             break;
         case 10:
-            tile = T_DOOR5;
+            tile = T_DOOR_FINAL_2;
             break;
         case 11:
-            tile = T_DOOR6;
+            tile = T_DOOR_FINAL_3;
+            break;
+        case 12:
+            tile = T_DOOR_4_1;
+            break;
+        case 13:
+            tile = T_DOOR_4_2;
+            break;
+        case 14:
+            tile = T_DOOR_4_3;
             break;
         default:
             tile = T_MALANE2;
@@ -434,7 +450,7 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
             //cmt = hmt;
             switch (cmt) {
             case 1:
-                ceilingTile = T_WOOD_PLANKS;
+                ceilingTile = T_BRICKS_2;
                 break;
             case 2:
                 ceilingTile = T_MALANE2;
@@ -702,7 +718,7 @@ void drawScreen(int v) {
 
     switch (v) {
     case 1:
-        T = S_TITLE;
+        T = T_COVER;
         break;
     default:
         T = S_TITLE;
@@ -769,4 +785,21 @@ void drawSide(Player p) {
         }
     }
     
+}
+
+void drawHeart(int x_pos, int y_pos) {
+    int* T = T_HEART_1;
+    for (int y = 0; y < 32; y++) {
+        for (int x = 0; x < 32; x++) {
+            int pixel = (32 * y * 3) + (x * 3);
+            int r = T[pixel]; int g = T[pixel + 1]; int b = T[pixel + 2];
+            if (!(r > 200 && g > 200)) {
+                glPointSize(STRETCH);
+                glColor3ub(r, g, b);
+                glBegin(GL_POINTS);
+                glVertex2d((x + x_pos) * 6, (y + y_pos) * 6);
+                glEnd();
+            }
+        }
+    }
 }

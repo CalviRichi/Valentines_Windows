@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 //#include "dependencies/assets/textures.h"
 #include "dependencies/include/glad/glad.h"
 #include "dependencies/include/glfw3.h"
@@ -86,6 +87,7 @@ typedef struct {
     float plX, plY; // x and y coordinates
     float pdX, pdY, pa; // directions in each axis and an angle for the raycaster
     char hasGun; // whether or not the player has a gun
+    float moveCounter;
     int heartCounter;
     /*
     Inventory
@@ -107,7 +109,6 @@ enum HEALTH_INFO {
     ENEMY_HEALTH = 3,
     COLLECTABLE_HEALTH = -1,
     GUN_HEALTH = -2
-
 };
 
 typedef enum {
@@ -116,6 +117,12 @@ typedef enum {
     TOP_RIGHT,
     TOP_LEFT
 } REGION;
+
+enum AUDIO_CHANNELS {
+    GUNSHOT = 1,
+    ITEM,
+    STEP
+};
 
 typedef struct Sprite {
     // another doubly linked list
@@ -135,7 +142,7 @@ static float dist(float ax, float ay, float bx, float by, float ang) {
     return (sqrt((bx - ax) * (bx - ax) + (by - ay) * (by - ay)));
 }
 
-static int playSoundEffect(char* s) {
+static int playSoundEffect(char* s, int channel) {
 
     Mix_Chunk* sound = Mix_LoadWAV(s);
     if (!sound) {
@@ -144,7 +151,8 @@ static int playSoundEffect(char* s) {
     }
 
     // Play the sound on the first available channel (-1)
-    Mix_PlayChannel(-1, sound, 0);
+
+    Mix_PlayChannel(channel, sound, 0);
     return 0;
 }
 

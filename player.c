@@ -1,11 +1,14 @@
 #include "game_types.h"
 
+#define FOOTSTEP_FREQUENCY 12
+
 static int b_x, b_x_add, b_x_sub, b_y, b_y_add, b_y_sub;
 static int beginPosX, beginPosY, endPosX, endPosY;
 
 void shootGun(Sprite * s, Player * p, int bTravel, int * flashTimer, Map * m) {
     if (p->hasGun) {
-        if (playSoundEffect("dependencies/assets/gunshot.wav")) {
+       
+        if (playSoundEffect("dependencies/assets/gunshot.wav", GUNSHOT)) {
             printf("something went wrong!\n");
         }
         while (s) {
@@ -114,6 +117,36 @@ int movePlayer(Player * p, float deltaTime, Sprite * s, unsigned int * buttonBuf
     //printf("plx: %f, ply: %f\n", plX, plY);
     if (*buttonBuffer & W_DOWN)
     {
+        /*
+        Adding footsteps
+        */
+        if (p->moveCounter == 0) {
+            
+            p->moveCounter += deltaTime;
+            int r = rand() % 3;
+            switch (r) {
+            case 0:
+                playSoundEffect("dependencies/assets/Footstep_1.wav", -1);
+                break;
+            case 1:
+                playSoundEffect("dependencies/assets/Footstep_2.wav", -1);
+                break;
+            case 2:
+                playSoundEffect("dependencies/assets/Footstep_3.wav", -1);
+                break;
+            }
+            
+            
+        }
+        else if (p->moveCounter >= FOOTSTEP_FREQUENCY){
+            p->moveCounter = 0;
+        }
+        else {
+            p->moveCounter += 1;
+        }
+        
+
+        
         
         if (m->map[ipy*MAP_X + ipx_add_xo]==0) { // if the sector in front of you is empty you can move
             //printf("Hello\n");
@@ -204,6 +237,34 @@ int movePlayer(Player * p, float deltaTime, Sprite * s, unsigned int * buttonBuf
     }
     if (*buttonBuffer & S_DOWN)
     {
+
+        if (p->moveCounter == 0) {
+            
+            p->moveCounter += deltaTime;
+            int r = rand() % 3;
+            switch (r) {
+            case 0:
+                playSoundEffect("dependencies/assets/Footstep_1.wav", -1);
+                break;
+            case 1:
+                playSoundEffect("dependencies/assets/Footstep_2.wav", -1);
+                break;
+            case 2:
+                playSoundEffect("dependencies/assets/Footstep_3.wav", -1);
+                break;
+            }
+           
+
+
+        }
+        else if (p->moveCounter >= FOOTSTEP_FREQUENCY) { // arbitary value so that it's not too spammy
+            p->moveCounter = 0;
+        }
+        else {
+            p->moveCounter += 1;
+        }
+
+
         if (m->map[ipy*MAP_X + ipx_sub_xo]==0) {
             p->plX -= p->pdX*deltaTime*PLAYER_SPEED;
         }
@@ -305,25 +366,21 @@ int movePlayer(Player * p, float deltaTime, Sprite * s, unsigned int * buttonBuf
             yo+=16;
         }
         
-        if (m->map[ipy_add_yo*MAP_X+ipx_add_xo] == 4) {
-            /*
-            * Save "ipy_add_yo*MAP_X+ipx_add_xo" as a variable
-            * each time it will
-            This will need to get changed in some sort of way
-            Variable called open door (can be put inside button buffer
-            gets called in this function (since this function only runs 
-            once. 
-            Once the variable is turned on it will be controlled by the 
-            animation variable
-            */
+        if (m->map[ipy_add_yo*MAP_X+ipx_add_xo] == 4 || m->map[ipy_add_yo * MAP_X + ipx_add_xo] == 3) {
             
             int doorValue = ipy_add_yo * MAP_X + ipx_add_xo;
-            if (p->heartCounter > 1) {
+            int mapValue = m->map[doorValue];
+            if (p->heartCounter > 1 && mapValue == 4) {
                 //printf("opening door, %d\n", m->map[doorValue]);
                 *buttonBuffer ^= DOOR_SLIDE;
                 
                 return doorValue;
                 //m->map[ipy_add_yo * MAP_X + ipx_add_xo] = 0;
+            }
+            else if (p->heartCounter > 3 && mapValue == 3) {
+                *buttonBuffer ^= DOOR_SLIDE;
+
+                return doorValue;
             }
             else {
                 printf("\n-You do not have enough hearts to open this door!-\n");
@@ -333,7 +390,7 @@ int movePlayer(Player * p, float deltaTime, Sprite * s, unsigned int * buttonBuf
     }
     if (*buttonBuffer & PERIOD_DOWN) {
         *buttonBuffer ^= PERIOD_DOWN;
-        if (playSoundEffect("dependencies/assets/sus.wav")) {
+        if (playSoundEffect("dependencies/assets/sus.wav", STEP)) {
             printf("something went wrong!\n");
         }
     }

@@ -1,7 +1,7 @@
 #include "game_types.h"
 
 static float interact = 0;
-#define ATTACK_RATE 2.5
+#define ATTACK_RATE 9
 
 Sprite *newSprite(SPRITE_TYPE state, int region, int texture, int health, float x, float y, float z) {
     Sprite *spriteHead = (Sprite*)malloc(sizeof(Sprite));
@@ -169,15 +169,20 @@ void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
         */
         float x1 = s->x - p.plX; float y1 = s->y - p.plY;
         float d = sqrt(x1*x1 + y1*y1);
-        if (d < 10 && s->health == COLLECTABLE_HEALTH) {
+        if (d < 10 && s->health == COLLECTABLE_HEALTH && pl->heartCounter < 9) {
             s->state = OFF;
-            if (pl->heartCounter < 12) pl->heartCounter++;
-            playSoundEffect("dependencies/assets/coin.wav");
+           
+            if (pl->heartCounter < 9) { 
+                pl->heartCounter++;
+                playSoundEffect("dependencies/assets/coin.wav", ITEM);
+            }
+            
         }
         else if (d < 10 && s->health == (GUN_HEALTH)) {
+         
             s->state = OFF;
             pl->hasGun = TRUE;
-            playSoundEffect("dependencies/assets/coin.wav");
+            playSoundEffect("dependencies/assets/coin.wav", ITEM);
         }
        
         return;

@@ -5,6 +5,12 @@
 #define ENEMY_HEIGHT -5
 #define HEART_HEIGHT -5
 
+#define HEART_X_MAX 147
+#define HEART_X_MIN 15
+
+#define HEART_Y_MAX 78
+#define HEART_Y_MIN -6
+
 //#define DEBUG
 
 #ifdef DEBUG
@@ -12,6 +18,13 @@ static const char db = TRUE;
 #else
 static const char db = FALSE;
 #endif
+
+// INFO FOR THE HEART ON TITLE SCREEN
+
+static int heart_x; static int heart_y;
+static char heartMoving = FALSE;
+static char x_direction;
+static char y_direction;
 
 typedef enum {
     TITLE_SCREEN = 0,
@@ -46,6 +59,49 @@ static int depth[120];
 
 static char tutorial = TRUE;
 
+void heartMove() {
+    if (heartMoving) {
+
+        if (x_direction) { // moving right
+            if (heart_x >= HEART_X_MAX) {
+                x_direction ^= TRUE;
+                playSoundEffect("dependencies/assets/heart_wall.wav", GUNSHOT);
+            }
+            else {
+                heart_x += 1;
+            }
+        }
+        else { // moving left
+            if (heart_x <= HEART_X_MIN) {
+                x_direction ^= TRUE;
+                playSoundEffect("dependencies/assets/heart_wall.wav", GUNSHOT);
+            }
+            else {
+                heart_x -= 1;
+            }
+        }
+
+        if (y_direction) { // moving down
+            if (heart_y >= HEART_Y_MAX) {
+                 y_direction ^= TRUE;
+                 playSoundEffect("dependencies/assets/heart_wall.wav", GUNSHOT);
+            }
+            else {
+                heart_y += 1;
+            }
+        }
+        else { // moving up
+            if (heart_y <= HEART_Y_MIN) {
+                y_direction ^= TRUE;
+                playSoundEffect("dependencies/assets/heart_wall.wav", GUNSHOT);
+            }
+            else {
+                heart_y -= 1;
+            }
+        }
+    }
+}
+
 void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (action == GLFW_PRESS)
@@ -58,13 +114,18 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
             break;
         case GLFW_KEY_ENTER:
             if (gamestate == TITLE_SCREEN) {
+                heartMoving = FALSE;
                 gamestate = PLAYING_GAME;
                 if (tutorial) {
                     printf("\n---Press 'W' to move forward and 'S' to move back---\n");
                     printf("---Press 'A' and 'D' to look left and right---\n");
+                    printf("---Press 'E' on a door to open it---\n");
                     tutorial = FALSE;
                 }
             }
+            break;
+        case GLFW_KEY_SPACE:
+            heartMoving ^= TRUE;
             break;
         case W:
             buttonBuffer ^= W_DOWN;
@@ -166,14 +227,20 @@ void levelInit(Sprite ** s) {
     *s = sp;
 }
 
-void levelWipe() { return; } // will be called when changing maps
-/*
-This requires some refactoring, ideally a map could contain a list of the sprites that will exist per level
-*/
+void levelWipe(Sprite ** s) { 
+    return; 
 
+} // will be called when changing maps
 
 int main()
 {
+    srand(time(NULL));
+    // use constant heart x max and such
+    heart_x = 100;
+    heart_y = 35;
+    x_direction = rand() % 2;
+    y_direction = rand() % 2;
+    
     // START INITIALIZATION ------------------------------------
 
     // AUDIO INIT
@@ -187,7 +254,12 @@ int main()
         return 1;
     }
 
-    Mix_Volume(-1, 24);
+    Mix_AllocateChannels(16);
+    Mix_ReserveChannels(4);
+    Mix_Volume(-1, 3);
+    Mix_Volume(GUNSHOT, 15);
+    Mix_Volume(ITEM, 24);
+    Mix_Volume(STEP, 6);
 
     // GRAPHICS INIT
     GLFWwindow *window;
@@ -252,7 +324,8 @@ int main()
         .plY = 400,
         .pdX = (float)cos(0.0001) * VIEWING_ANGLE_CHANGE,
         .pdY = (float)sin(0.0001) * VIEWING_ANGLE_CHANGE,
-        .hasGun = FALSE // will eventually start as false
+        .hasGun = FALSE, // will eventually start as false
+        .moveCounter = 0
     };
 
     double lastTime = glfwGetTime();
@@ -262,9 +335,12 @@ int main()
     double animation = 0;
     int secondAnimation = 0;
 
+
+
     printf("Welcome to the game!!!\n\n");
     printf("---Press 'Enter' to start or press 'Esc' to pause the game---\n");
     printf("---(press 'Esc' once more in the pause screen to exit)---\n");
+   
     
    
     // GAME LOOP
@@ -285,8 +361,11 @@ int main()
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+                // update heart
+                heartMove();
                 drawSide(player);
-                drawScreen(1);
+                drawScreen(1); // make this a variable
+                drawHeart(heart_x, heart_y);
 
                 glfwSwapBuffers(window); // has to be last
 
@@ -314,10 +393,20 @@ int main()
                         }
                         else if (hM->map[dChange] == 11) {
                             hM->map[dChange] = 0;
+                            
                             buttonBuffer ^= DOOR_SLIDE;
                         }
+
+                        if (hM->map[dChange] == 3) {
+                            hM->map[dChange] = 12;
+                        }
+                        else if (hM->map[dChange] == 14) {
+                            hM->map[dChange] = 9;
+                        }
                         else {
-                            hM->map[dChange] = hM->map[dChange] + 1;
+                            if (hM->map[dChange] != 0) {
+                                hM->map[dChange] = hM->map[dChange] + 1;
+                            }
                         }
                     }
                 }
