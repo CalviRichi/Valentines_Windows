@@ -5,12 +5,6 @@
 #define ENEMY_HEIGHT -5
 #define HEART_HEIGHT -5
 
-#define HEART_X_MAX 147
-#define HEART_X_MIN 15
-
-#define HEART_Y_MAX 78
-#define HEART_Y_MIN -6
-
 //#define DEBUG
 
 #ifdef DEBUG
@@ -19,13 +13,6 @@ static const char db = TRUE;
 static const char db = FALSE;
 #endif
 
-// INFO FOR THE HEART ON TITLE SCREEN
-
-static int heart_x; static int heart_y;
-static char heartMoving = FALSE;
-static char x_direction;
-static char y_direction;
-
 typedef enum {
     TITLE_SCREEN = 0,
     PLAYING_GAME,
@@ -33,7 +20,17 @@ typedef enum {
 } State; 
 static State gamestate = TITLE_SCREEN;
 
+typedef enum {
+    LEVEL_ONE,
+    LEVEL_TWO,
+    LEVEL_THREE,
+    LEVEL_FOUR
+} Level;
+static Level level = LEVEL_ONE;
+
 static int dChange = -1;
+static char killFlag = FALSE;
+static char spawnFlag = FALSE;
 
 static enum
 { // enum used in the handle keys function
@@ -59,48 +56,8 @@ static int depth[120];
 
 static char tutorial = TRUE;
 
-void heartMove() {
-    if (heartMoving) {
-
-        if (x_direction) { // moving right
-            if (heart_x >= HEART_X_MAX) {
-                x_direction ^= TRUE;
-                playSoundEffect("dependencies/assets/heart_wall.wav", GUNSHOT);
-            }
-            else {
-                heart_x += 1;
-            }
-        }
-        else { // moving left
-            if (heart_x <= HEART_X_MIN) {
-                x_direction ^= TRUE;
-                playSoundEffect("dependencies/assets/heart_wall.wav", GUNSHOT);
-            }
-            else {
-                heart_x -= 1;
-            }
-        }
-
-        if (y_direction) { // moving down
-            if (heart_y >= HEART_Y_MAX) {
-                 y_direction ^= TRUE;
-                 playSoundEffect("dependencies/assets/heart_wall.wav", GUNSHOT);
-            }
-            else {
-                heart_y += 1;
-            }
-        }
-        else { // moving up
-            if (heart_y <= HEART_Y_MIN) {
-                y_direction ^= TRUE;
-                playSoundEffect("dependencies/assets/heart_wall.wav", GUNSHOT);
-            }
-            else {
-                heart_y -= 1;
-            }
-        }
-    }
-}
+static char heartMoving = FALSE;
+static char heartFlip = FALSE;
 
 void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
@@ -109,13 +66,25 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
         switch (key)
         {
         case GLFW_KEY_ESCAPE:
-            if (gamestate == PLAYING_GAME) gamestate = TITLE_SCREEN;
+            if (gamestate == PLAYING_GAME) {
+                Mix_ResumeMusic();
+                gamestate = TITLE_SCREEN; 
+                Mix_Volume(-1, 12);
+                Mix_Volume(GUNSHOT, 15);
+                Mix_Volume(ITEM, 24);
+                Mix_Volume(STEP, 6);
+            }
             else if (gamestate == TITLE_SCREEN) glfwSetWindowShouldClose(window, GLFW_TRUE);
             break;
         case GLFW_KEY_ENTER:
             if (gamestate == TITLE_SCREEN) {
-                heartMoving = FALSE;
+                //heartMoving = FALSE;
+                Mix_PauseMusic();
                 gamestate = PLAYING_GAME;
+                Mix_Volume(-1, 3);
+                Mix_Volume(GUNSHOT, 15);
+                Mix_Volume(ITEM, 24);
+                Mix_Volume(STEP, 6);
                 if (tutorial) {
                     printf("\n---Press 'W' to move forward and 'S' to move back---\n");
                     printf("---Press 'A' and 'D' to look left and right---\n");
@@ -143,17 +112,32 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
             buttonBuffer ^= E_DOWN;
             break;
         case R:
+            if (gamestate == TITLE_SCREEN) {
+                heartFlip = TRUE;
+            }
             buttonBuffer ^= R_DOWN;
+            break;
+        case GLFW_KEY_T:
+            killFlag = TRUE;
+            break;
+        case GLFW_KEY_Y:
+            spawnFlag = TRUE;
             break;
         case COMMA:
             if (gamestate == PLAYING_GAME) {
                 buttonBuffer ^= COMMA_DOWN;
                 buttonBuffer ^= GUN_FIRE;
             }
+            else if (gamestate == TITLE_SCREEN) {
+                buttonBuffer ^= ADD_HEART;
+            }
             break;
         case PERIOD:
             if (gamestate == PLAYING_GAME) { 
                 buttonBuffer ^= PERIOD_DOWN; 
+            }
+            else if (gamestate == TITLE_SCREEN) {
+                buttonBuffer ^= REMOVE_HEART;
             }
             break;
         default:
@@ -191,14 +175,39 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
     }
 }
 
+void levelWipe(Sprite** s) {
+
+    Sprite* hS = *s;
+
+    while (hS) { // free all sprites in state 0
+        Sprite* nextSprite = hS->next; // Store next before removal
+        //printf("headsprite x: %f, headsprite y: %f\n", hS->x, hS->y);
+        if (hS->state != 0) {
+            //if (hS == headSprite) {
+              //  headSprite = headSprite->next;
+            //}
+
+            spriteRemove(hS, NULL, s);
+            hS = NULL;
+
+        }
+
+        hS = nextSprite; // Move to next sprite
+    }
+    killFlag = FALSE;
+
+} // will be called when changing maps
+
 void levelInit(Sprite ** s) {
+    if (*s != NULL) {
+        levelWipe(s);
+    }
     
     Sprite* sp = *s; // create a copy of the head (basically just to avoid dereferencing every time)
     Sprite* spr; // sprite pointer for the loop
     // enemy height = -20
 
     // top left = 96, 96 -- add 64 per square
-
 
     sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
 
@@ -207,10 +216,6 @@ void levelInit(Sprite ** s) {
     spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 160, HEART_HEIGHT); // TL heart top left
 
     spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 416, HEART_HEIGHT); // TL heart bottom left
-
-    spr = spriteAdd(spr, ENEMY, TOP_LEFT, 13, ENEMY_HEALTH, 224, 288, ENEMY_HEIGHT); // TL enemy middle
-
-    spr = spriteAdd(spr, ENEMY, TOP_RIGHT, 13, ENEMY_HEALTH, 96, 288, ENEMY_HEIGHT); // TR enemy left
 
     spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 1, COLLECTABLE_HEALTH, 96, 416, HEART_HEIGHT); // TR heart bottom left
 
@@ -222,25 +227,17 @@ void levelInit(Sprite ** s) {
 
     spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 14, GUN_HEALTH, 96, 160, HEART_HEIGHT);
 
-    // weapon location bottom right
+    spr = spriteAdd(spr, ENEMY, TOP_LEFT, 13, ENEMY_HEALTH, 224, 288, ENEMY_HEIGHT); // TL enemy middle
 
+    spr = spriteAdd(spr, ENEMY, TOP_RIGHT, 13, ENEMY_HEALTH, 96, 288, ENEMY_HEIGHT); // TR enemy left
+
+    // ENEMIES ALWAYS LAST
+    spawnFlag = FALSE;
     *s = sp;
 }
 
-void levelWipe(Sprite ** s) { 
-    return; 
-
-} // will be called when changing maps
-
 int main()
 {
-    srand(time(NULL));
-    // use constant heart x max and such
-    heart_x = 100;
-    heart_y = 35;
-    x_direction = rand() % 2;
-    y_direction = rand() % 2;
-    
     // START INITIALIZATION ------------------------------------
 
     // AUDIO INIT
@@ -256,7 +253,7 @@ int main()
 
     Mix_AllocateChannels(16);
     Mix_ReserveChannels(4);
-    Mix_Volume(-1, 3);
+    Mix_Volume(-1, 12);
     Mix_Volume(GUNSHOT, 15);
     Mix_Volume(ITEM, 24);
     Mix_Volume(STEP, 6);
@@ -272,7 +269,7 @@ int main()
     }
 
     //glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // you can't resize the window
-    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Valentines Game", NULL, NULL); // name the window anything applicable 
+    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Steal My Heart", NULL, NULL); // name the window anything applicable 
     //960 512
     if (window == NULL)
     {
@@ -300,23 +297,29 @@ int main()
 
     // END INITIALIZATION ------------------------------------------------------
 
-    Sprite * headSprite;
+    Sprite * headSprite = NULL;
     levelInit(&headSprite); 
-    // *s = newSprite(1,2,1,3,96,96,30);
-    //headSprite->next = newSprite(1, 2, 1, 3, 380, 418, 20);
+    
+    Heart* headHeart = newHeart(125,52);
 
     Sprite* hS; // copies of the head for each list
     Map* hM;
+    Heart* hH;
 
-    // While it's annoying to have such a long function header, this allows for dynamic creation of sprites
-    Map * headMap = newMap(map_walls_small, map_walls_small_2, map_walls_small_3, map_walls_small_4);
-    
-    for (int i = 0; i < ROOM_NUM; i++) {
-        headMap->c[i] = map_ceiling_small;
-        headMap->f[i] = map_floor_small;
+    Map * headMap = newMap(map_1_bottom_left, map_1_bottom_right, map_1_top_right, map_1_top_left);
+    //hM = mapAdd(headMap, ); // second map
+
+    hM = headMap;
+    while (hM) {
+        for (int i = 0; i < ROOM_NUM; i++) {
+            hM->c[i] = map_ceiling_small;
+            hM->f[i] = map_floor_small;
+        }
+        hM->mapC = hM->c[0];
+        hM->mapF = hM->f[0];
+        hM = hM->next;
     }
-    headMap->mapC = headMap->c[0];
-    headMap->mapF = headMap->f[0];
+    hM = headMap;
     // this could be its own function
     
     Player player = {
@@ -342,8 +345,17 @@ int main()
     printf("---(press 'Esc' once more in the pause screen to exit)---\n");
    
     
-   
     // GAME LOOP
+
+    Mix_Music* music = Mix_LoadMUS("dependencies/assets/StealmyHeart_Music.wav");
+    if (!music) {
+        printf("Failed to load music! SDL_mixer Error: %s\n", Mix_GetError());
+    }
+    if (Mix_PlayMusic(music, -1 ) == -1) { // -1 loops indefinitely
+        printf("Failed to play music! SDL_mixer Error: %s\n", Mix_GetError());
+    }
+    Mix_VolumeMusic(15);
+
 
     while (!glfwWindowShouldClose(window))
     { // main loop
@@ -357,16 +369,31 @@ int main()
         switch (gamestate) {
 
             case TITLE_SCREEN:
+                hH = headHeart;
+
                 glfwPollEvents();
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                // update heart
-                heartMove();
                 drawSide(player);
                 drawScreen(1); // make this a variable
-                drawHeart(heart_x, heart_y);
 
+                // update heart
+                addAHeart(hH, &buttonBuffer);
+                if (buttonBuffer & REMOVE_HEART) {
+                    buttonBuffer ^= REMOVE_HEART;
+                    HeartRemove(NULL, &hH);
+                }
+                while (hH) {
+                    
+                    heartMove(hH, heartMoving, heartFlip);
+                    drawHeart(*hH);
+                    hH = hH->next;
+                }
+                if (heartFlip) {
+                    heartFlip = FALSE;
+                }
+                
                 glfwSwapBuffers(window); // has to be last
 
                 break;
@@ -376,36 +403,50 @@ int main()
                 hS = headSprite;
                 hM = headMap;
                 
+                if (killFlag) {
+                    levelWipe(&headSprite);
+                }
+                if (spawnFlag) {
+                    levelInit(&headSprite);
+                }
+
                 //taking input
                 glfwPollEvents();
                 
                 int d = movePlayer(&player, deltaTime, headSprite, &buttonBuffer, hM, bTravel, &flashTimer);
-                if (d != -1) {
+                if (d > -1) {
                     dChange = d;
                     
+                }
+                else if (d == -2){
+
+                    level = LEVEL_TWO;
                 }
                 
                 if (buttonBuffer & DOOR_SLIDE) {
                     //printf("changed!, %d\n", d);
                     if (animation == 0) {
-                        if (hM->map[dChange] == 4) {
+                        if (hM->map[dChange] == 4) { // start the animation
                             hM->map[dChange] = 6;
                         }
-                        else if (hM->map[dChange] == 11) {
-                            hM->map[dChange] = 0;
+                        else if (hM->map[dChange] == 12) {
+                            hM->map[dChange] = 0; // door erased
                             
-                            buttonBuffer ^= DOOR_SLIDE;
+                            buttonBuffer ^= DOOR_SLIDE; 
                         }
 
-                        if (hM->map[dChange] == 3) {
-                            hM->map[dChange] = 12;
-                        }
-                        else if (hM->map[dChange] == 14) {
-                            hM->map[dChange] = 9;
+                        if (hM->map[dChange] == 3) { // start the animation
+                            hM->map[dChange] = 7;
                         }
                         else {
                             if (hM->map[dChange] != 0) {
-                                hM->map[dChange] = hM->map[dChange] + 1;
+                                if (hM->map[dChange] == 6) {
+                                    hM->map[dChange] = hM->map[dChange] + 2;
+                                }
+                                else {
+                                    hM->map[dChange] = hM->map[dChange] + 1;
+                                }
+                                
                             }
                         }
                     }
@@ -430,8 +471,9 @@ int main()
                 
                 //rendering 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);      
-                
-                drawRays3D(player, *hM, &bTravel, depth);
+                if (hM) {
+                    drawRays3D(player, *hM, &bTravel, depth);
+                }
                 drawSide(player);
                 while (hS != NULL) {
                     if (animation == 0) {
@@ -475,9 +517,9 @@ int main()
                     hM = headMap;
                     
                 }
-                //else {
-                    // if we are not in debug mode, clear the memory
-                /*
+                
+                
+                
                     hS = headSprite;
 
                     while (hS) { // free all sprites in state 0
@@ -496,8 +538,8 @@ int main()
                         hS = nextSprite; // Move to next sprite
                     }
 
-                */   
-                //}
+                  
+                
                 
                 drawGun(player, buttonBuffer);
                 if (animation == 0 && buttonBuffer & GUN_FIRE) {

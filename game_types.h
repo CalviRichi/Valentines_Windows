@@ -7,9 +7,7 @@
 #include "dependencies/include/glfw3.h"
 #include "dependencies/include/SDL2/include/SDL.h"
 #include "dependencies/include/SDL2_mixer/include/SDL_mixer.h"
-//#include <Windows.h>
-//#include <mmsystem.h>
-//#pragma comment(lib, "winmm.lib")
+
 
 #ifndef GAME_TYPES_H
 #define GAME_TYPES_H
@@ -63,7 +61,10 @@ typedef enum
     PERIOD_DOWN = 0x40,
     R_DOWN = 0x80,
     DOOR_SLIDE = 0x100,
-    GUN_FIRE = 0x200
+    GUN_FIRE = 0x200,
+    ADD_HEART = 0x400,
+    REMOVE_HEART = 0x800
+
 } ACTION_KEYS;
 
 // ----------- MAPS -------------
@@ -137,6 +138,34 @@ typedef struct Sprite {
 
 } Sprite;
 
+// ------------- HEART OBJECTS ---------------
+
+enum COLORS {
+    PURPLE,
+    PINK,
+    RED
+};
+
+typedef struct Heart {
+    struct Heart* previous;
+    float x_pos;
+    float y_pos;
+    char x_direction;
+    char y_direction;
+    int color;
+    float speed;
+    struct Heart* next;
+} Heart;
+
+#define HEART_X_MAX 183
+#define HEART_X_MIN 18
+
+#define HEART_Y_MAX 99
+#define HEART_Y_MIN -6
+
+#define HEART_SPEED 1
+#define HEART_SIZE 5
+
 // ------------- UTILITY FUNCTIONS -- TO BE USED IN VARIOUS FILES
 static float dist(float ax, float ay, float bx, float by, float ang) {
     return (sqrt((bx - ax) * (bx - ax) + (by - ay) * (by - ay)));
@@ -159,8 +188,8 @@ static int playSoundEffect(char* s, int channel) {
 // ------------- MAP FUNCTIONS -- DEFINED WITHIN MAP.C
 
 void drawMap2D(Map m);
-Map *newMap(int m1[MAP_S], int m2[MAP_S], int m3[MAP_S], int m4[MAP_S]);
-Map *mapAdd(Map *tail, int m1[MAP_S], int m2[MAP_S], int m3[MAP_S], int m4[MAP_S]);
+Map *newMap(int bottomleft[MAP_S], int bottomright[MAP_S], int topright[MAP_S], int topleft[MAP_S]);
+Map *mapAdd(Map *tail, int bottomleft[MAP_S], int bottomright[MAP_S], int topright[MAP_S], int topleft[MAP_S]);
 void mapRemove(Map *item, int * dataCopy[ROOM_NUM]);
 
 // ------------- PLAYER FUNCTIONS -- DEFINED WITHIN PLAYER.C
@@ -177,6 +206,14 @@ Sprite *newSprite(SPRITE_TYPE state, int region, int texture, int health, float 
 Sprite *spriteAdd(Sprite * tail, SPRITE_TYPE state, int region, int texture, int health, float x, float y, float z);
 void spriteRemove(Sprite * item, Sprite * sCopy, Sprite ** headSprite);
 void drawSpriteMap(Sprite s);
-void drawSprite(Sprite * sp, Player p, Map m, int * flashTimer, int depth[120]);
 void moveSprite(Sprite * s, float dt, Player * p, Map m);
+
+// ------------- HEART OBJECT FUNCTIONS -- DEFINED WITHIN HEART_OBJECT.C
+
+Heart* newHeart(float x_pos, float y_pos);
+Heart* HeartAdd(Heart* tail);
+void heartMove(Heart* h, char heartMoving, char heartFlip);
+void addAHeart(Heart* h, static unsigned int * buttonBuffer);
+void HeartRemove(Heart* sCopy, Heart** headHeart);
+
 #endif

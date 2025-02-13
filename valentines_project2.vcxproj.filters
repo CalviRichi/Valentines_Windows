@@ -75,5 +75,8 @@
     <ClCompile Include="render.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="heart_object.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

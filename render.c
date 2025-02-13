@@ -2,6 +2,27 @@
 #include "dependencies/assets/textures.h"
 #include "dependencies/assets/title.ppm"
 #include "dependencies/assets/cover.ppm"
+#include "dependencies/assets/steal_my_heart.ppm"
+#include "dependencies/assets/pinkheart.ppm"
+#include "dependencies/assets/redheart.ppm"
+#include "dependencies/assets/standardwall.ppm"
+#include "dependencies/assets/overgrownwal.ppm"
+#include "dependencies/assets/secondovergrownwall.ppm"
+#include "dependencies/assets/ceiling.ppm"
+#include "dependencies/assets/tree.ppm"
+#include "dependencies/assets/ground.ppm"
+
+#include "dependencies/assets/door2f.ppm"
+#include "dependencies/assets/door4f.ppm"
+
+#include "dependencies/assets/explode1.ppm"
+#include "dependencies/assets/explode2.ppm"
+#include "dependencies/assets/explode3.ppm"
+#include "dependencies/assets/explode4.ppm"
+#include "dependencies/assets/explode5.ppm"
+#include "dependencies/assets/newHallway.ppm"
+
+
 
 void drawGun(Player p, static unsigned int bb) {
     if (p.hasGun) {
@@ -229,46 +250,46 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
         switch (hmt) {
 
         case 1:
-            tile = T_WOOD_PLANKS;
+            tile = T_MOSSY;
             break;
         case 2:
             tile = T_EXIT;
             break;
         case 3:
-            tile = T_DOOR_4_1;
+            tile = T_DOOR4f;
             break;
         case 4:
-            tile = T_DOOR_2_1;
+            tile = T_DOOR2f;
             break;
         case 5:
-            tile = T_HALLWAY;
+            tile = T_NEW_HALLWAY;
             break;
         case 6:
-            tile = T_DOOR_2_1;
+            tile = T_DOOR2f;
             break;
         case 7:
-            tile = T_DOOR_2_2;
+            tile = T_DOOR4f;
             break;
         case 8:
-            tile = T_DOOR_2_3;
+            tile = T_EXPLODE1;
             break;
         case 9:
-            tile = T_DOOR_FINAL_1;
+            tile = T_EXPLODE2;
             break;
         case 10:
-            tile = T_DOOR_FINAL_2;
+            tile = T_EXPLODE3;
             break;
         case 11:
-            tile = T_DOOR_FINAL_3;
+            tile = T_EXPLODE4;
             break;
         case 12:
-            tile = T_DOOR_4_1;
+            tile = T_EXPLODE5;
             break;
-        case 13:
-            tile = T_DOOR_4_2;
+        case 15:
+            tile = T_NEW_WALL_2;
             break;
-        case 14:
-            tile = T_DOOR_4_3;
+        case 16:
+            tile = T_TREE;
             break;
         default:
             tile = T_MALANE2;
@@ -433,7 +454,7 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
                 break;
 
             case 2:
-                floorTile = T_GRASS_2;
+                floorTile = T_CEILING;
                 break;
 
             default:
@@ -450,7 +471,7 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
             //cmt = hmt;
             switch (cmt) {
             case 1:
-                ceilingTile = T_BRICKS_2;
+                ceilingTile = T_GROUND;
                 break;
             case 2:
                 ceilingTile = T_MALANE2;
@@ -718,7 +739,7 @@ void drawScreen(int v) {
 
     switch (v) {
     case 1:
-        T = T_COVER;
+        T = S_COVER;
         break;
     default:
         T = S_TITLE;
@@ -787,8 +808,24 @@ void drawSide(Player p) {
     
 }
 
-void drawHeart(int x_pos, int y_pos) {
-    int* T = T_HEART_1;
+void drawHeart(Heart h) {
+    //printf("x: %f, y: %f\n", h.x_pos, h.y_pos);
+    int* T;
+    switch (h.color) {
+    case PURPLE:
+        T = T_HEART_1;
+        break;
+    case PINK:
+        T = T_PINK_HEART;
+        break;
+    case RED:
+        T = T_RED_HEART;
+        break;
+    default:
+        T = T_HEART_1;
+        break;
+    }
+    
     for (int y = 0; y < 32; y++) {
         for (int x = 0; x < 32; x++) {
             int pixel = (32 * y * 3) + (x * 3);
@@ -797,7 +834,7 @@ void drawHeart(int x_pos, int y_pos) {
                 glPointSize(STRETCH);
                 glColor3ub(r, g, b);
                 glBegin(GL_POINTS);
-                glVertex2d((x + x_pos) * 6, (y + y_pos) * 6);
+                glVertex2d((x+h.x_pos) * HEART_SIZE, (y+h.y_pos) * HEART_SIZE);
                 glEnd();
             }
         }

@@ -1,6 +1,6 @@
 #include "game_types.h"
 
-Map *newMap(int m1[MAP_S], int m2[MAP_S], int m3[MAP_S], int m4[MAP_S]) {
+Map *newMap(int bottomleft[MAP_S], int bottomright[MAP_S], int topright[MAP_S], int topleft[MAP_S]) {
     Map *mapHead = (Map*)malloc(sizeof(Map));
     if (mapHead == NULL) {
         // allocation failed
@@ -10,10 +10,10 @@ Map *newMap(int m1[MAP_S], int m2[MAP_S], int m3[MAP_S], int m4[MAP_S]) {
     
     mapHead->previous = NULL;
     
-    mapHead->m[0] = m1;
-    mapHead->m[1] = m2;
-    mapHead->m[2] = m3;
-    mapHead->m[3] = m4;
+    mapHead->m[0] = bottomleft;
+    mapHead->m[1] = bottomright;
+    mapHead->m[2] = topright;
+    mapHead->m[3] = topleft;
 
     mapHead->map = mapHead->m[0];
     /*
@@ -27,7 +27,7 @@ Map *newMap(int m1[MAP_S], int m2[MAP_S], int m3[MAP_S], int m4[MAP_S]) {
     return mapHead;
 }
 
-Map *mapAdd(Map *tail, int m1[MAP_S], int m2[MAP_S], int m3[MAP_S], int m4[MAP_S]) {
+Map *mapAdd(Map *tail, int bottomleft[MAP_S], int bottomright[MAP_S], int topright[MAP_S], int topleft[MAP_S]) {
     Map *newMap = (Map*)malloc(sizeof(Map));
     
     if (newMap == NULL) {
@@ -37,10 +37,10 @@ Map *mapAdd(Map *tail, int m1[MAP_S], int m2[MAP_S], int m3[MAP_S], int m4[MAP_S
     // setting values for the item
     newMap->previous = tail;
     
-    newMap->m[0] = m1;
-    newMap->m[1] = m2;
-    newMap->m[2] = m3;
-    newMap->m[3] = m4;
+    newMap->m[0] = bottomleft;
+    newMap->m[1] = bottomright;
+    newMap->m[2] = topright;
+    newMap->m[3] = topleft;
 
     /*
     for (int i = 0; i < MAP_S; i++) {
