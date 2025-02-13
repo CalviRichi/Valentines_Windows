@@ -206,7 +206,7 @@ Sprite *newSprite(SPRITE_TYPE state, int region, int texture, int health, float 
 Sprite *spriteAdd(Sprite * tail, SPRITE_TYPE state, int region, int texture, int health, float x, float y, float z);
 void spriteRemove(Sprite * item, Sprite * sCopy, Sprite ** headSprite);
 void drawSpriteMap(Sprite s);
-void moveSprite(Sprite * s, float dt, Player * p, Map m);
+int moveSprite(Sprite * s, float dt, Player * p, Map m);
 
 // ------------- HEART OBJECT FUNCTIONS -- DEFINED WITHIN HEART_OBJECT.C
 

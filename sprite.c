@@ -102,7 +102,7 @@ void drawSpriteMap(Sprite s) {
 }
 
 // different functions for different sprites
-void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
+int moveSprite(Sprite * s, float dt, Player * pl, Map m) {
     
     Player p = *pl;
     if (interact < ATTACK_RATE) {
@@ -110,7 +110,7 @@ void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
     }
 
     if (s->state == OFF || m.map!=m.m[s->region]) { // m.map!=m.m[s->region]
-        return;
+        return 0;
     }
 
     if (s->state == ENEMY) { // if it is an enemy
@@ -154,10 +154,15 @@ void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
         if (pl->heartCounter > 0) {
             pl->heartCounter--;
         }
+        else if (pl->heartCounter <= 0) {
+            
+            interact = 0;
+            return 1;
+        }
         interact = 0;
     }
 
-    return;
+    return 0;
 
     }
 
@@ -185,7 +190,7 @@ void moveSprite(Sprite * s, float dt, Player * pl, Map m) {
             playSoundEffect("dependencies/assets/coin.wav", ITEM);
         }
        
-        return;
+        return 0;
     }
 }
 

@@ -16,7 +16,8 @@ static const char db = FALSE;
 typedef enum {
     TITLE_SCREEN = 0,
     PLAYING_GAME,
-    END_SCREEN
+    END_SCREEN,
+    GAME_OVER
 } State; 
 static State gamestate = TITLE_SCREEN;
 
@@ -31,6 +32,8 @@ static Level level = LEVEL_ONE;
 static int dChange = -1;
 static char killFlag = FALSE;
 static char spawnFlag = FALSE;
+
+static char gameResetFlag = FALSE;
 
 static enum
 { // enum used in the handle keys function
@@ -92,6 +95,10 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
                     tutorial = FALSE;
                 }
             }
+            else if (gamestate == GAME_OVER) {
+                
+                gameResetFlag = TRUE;
+            }
             break;
         case GLFW_KEY_SPACE:
             heartMoving ^= TRUE;
@@ -115,7 +122,8 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
             if (gamestate == TITLE_SCREEN) {
                 heartFlip = TRUE;
             }
-            buttonBuffer ^= R_DOWN;
+            spawnFlag = TRUE;
+            //buttonBuffer ^= R_DOWN;
             break;
         case GLFW_KEY_T:
             killFlag = TRUE;
@@ -209,28 +217,37 @@ void levelInit(Sprite ** s) {
 
     // top left = 96, 96 -- add 64 per square
 
-    sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
+    if (level == LEVEL_ONE) {
 
-    spr = spriteAdd(sp, COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 355, 418, HEART_HEIGHT); // BL heart bottom right
-    
-    spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 160, HEART_HEIGHT); // TL heart top left
+        sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
 
-    spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 416, HEART_HEIGHT); // TL heart bottom left
+        spr = spriteAdd(sp, COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 355, 418, HEART_HEIGHT); // BL heart bottom right
 
-    spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 1, COLLECTABLE_HEALTH, 96, 416, HEART_HEIGHT); // TR heart bottom left
+        spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 160, HEART_HEIGHT); // TL heart top left
 
-    spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 1, COLLECTABLE_HEALTH, 352, 96, HEART_HEIGHT); // TR heart top tight
+        spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 416, HEART_HEIGHT); // TL heart bottom left
 
-    spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 1, COLLECTABLE_HEALTH, 224, 160, HEART_HEIGHT); // BR left heart
+        spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 1, COLLECTABLE_HEALTH, 96, 416, HEART_HEIGHT); // TR heart bottom left
 
-    spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 1, COLLECTABLE_HEALTH, 224, 288, HEART_HEIGHT); // BR middle heart
+        spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 1, COLLECTABLE_HEALTH, 352, 96, HEART_HEIGHT); // TR heart top tight
 
-    spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 14, GUN_HEALTH, 96, 160, HEART_HEIGHT);
+        spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 1, COLLECTABLE_HEALTH, 224, 160, HEART_HEIGHT); // BR left heart
 
-    spr = spriteAdd(spr, ENEMY, TOP_LEFT, 13, ENEMY_HEALTH, 224, 288, ENEMY_HEIGHT); // TL enemy middle
+        spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 1, COLLECTABLE_HEALTH, 224, 288, HEART_HEIGHT); // BR middle heart
 
-    spr = spriteAdd(spr, ENEMY, TOP_RIGHT, 13, ENEMY_HEALTH, 96, 288, ENEMY_HEIGHT); // TR enemy left
+        spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 14, GUN_HEALTH, 96, 160, HEART_HEIGHT);
 
+        spr = spriteAdd(spr, ENEMY, TOP_LEFT, 13, ENEMY_HEALTH, 224, 288, ENEMY_HEIGHT); // TL enemy middle
+
+        spr = spriteAdd(spr, ENEMY, TOP_RIGHT, 13, ENEMY_HEALTH, 96, 288, ENEMY_HEIGHT); // TR enemy left
+
+    }
+    else if (level == LEVEL_TWO) {
+        sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
+    }
+    else if (level == LEVEL_THREE) {
+        sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
+    }
     // ENEMIES ALWAYS LAST
     spawnFlag = FALSE;
     *s = sp;
@@ -307,9 +324,10 @@ int main()
     Heart* hH;
 
     Map * headMap = newMap(map_1_bottom_left, map_1_bottom_right, map_1_top_right, map_1_top_left);
-    //hM = mapAdd(headMap, ); // second map
-
+    hM = mapAdd(headMap, map_2_bottom_left, map_2_bottom_right, map_2_top_right, map_2_top_left); // second map
+    // map is set to index 0 by default
     hM = headMap;
+
     while (hM) {
         for (int i = 0; i < ROOM_NUM; i++) {
             hM->c[i] = map_ceiling_small;
@@ -319,8 +337,8 @@ int main()
         hM->mapF = hM->f[0];
         hM = hM->next;
     }
-    hM = headMap;
-    // this could be its own function
+    hM = headMap; // for the first time
+    
     
     Player player = {
         .plX = 100,
@@ -376,7 +394,7 @@ int main()
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 drawSide(player);
-                drawScreen(1); // make this a variable
+                drawScreen(TITLE_SCREEN); // make this a variable
 
                 // update heart
                 addAHeart(hH, &buttonBuffer);
@@ -401,7 +419,7 @@ int main()
             case PLAYING_GAME:
                 
                 hS = headSprite;
-                hM = headMap;
+                //hM = headMap;
                 
                 if (killFlag) {
                     levelWipe(&headSprite);
@@ -412,19 +430,18 @@ int main()
 
                 //taking input
                 glfwPollEvents();
-                
+
+
+                // "d" is a really important variable and should have a more distinct name
+
                 int d = movePlayer(&player, deltaTime, headSprite, &buttonBuffer, hM, bTravel, &flashTimer);
                 if (d > -1) {
                     dChange = d;
                     
                 }
-                else if (d == -2){
-
-                    level = LEVEL_TWO;
-                }
                 
                 if (buttonBuffer & DOOR_SLIDE) {
-                    //printf("changed!, %d\n", d);
+                    
                     if (animation == 0) {
                         if (hM->map[dChange] == 4) { // start the animation
                             hM->map[dChange] = 6;
@@ -453,9 +470,16 @@ int main()
                 }
                 //printf("x: %f, y: %f\n", player.plX, player.plY);
                 hS = headSprite;
+
+                int deathTrigger = 0;
+
                 while (hS) {
 
-                    moveSprite(hS, deltaTime, &player, *hM);
+                    int a = moveSprite(hS, deltaTime, &player, *hM);
+                    if (a != 0) {
+                        
+                        deathTrigger = a;
+                    }
                         // it should be something like shootgun takes in the sprite and 
                         // runs a loop for each of the sprites, regardless of if they're NULL
                         // and bulletScan simply fires into the wall if so
@@ -466,7 +490,7 @@ int main()
                 
 
                 hS = headSprite;
-                hM = headMap;
+                //hM = headMap;
                 bulletTravel = FALSE;
                 
                 //rendering 
@@ -476,16 +500,26 @@ int main()
                 }
                 drawSide(player);
                 while (hS != NULL) {
-                    if (animation == 0) {
-                        if (hS->texture == 12) hS->texture = 1;
-                        else hS->texture += 1;
+                    if (animation == 0 && hS->state == COLLECTABLE) {
+                        if (hS->texture == 12) {
+                            hS->texture = 1;
+                        }
+                        else if (hS->texture == 45) {
+                            hS->texture = 34;
+                        }
+                        else if (hS->texture == 57) {
+                            hS->texture = 46;
+                        }
+                        else { 
+                            hS->texture += 1;
+                        }
 
                         if (hS->texture == 33) { 
                             hS->texture = 14; 
                             hS->z = HEART_HEIGHT;
                         }
-                        else if (hS->texture >= 14){ 
-                            hS->texture += 1; 
+                        else if (hS->texture >= 14 && hS->texture < 33){ 
+                            hS->texture += 1; // this makes it rotate faster
                             if (hS->texture % 10 < 5) {
                                 hS->z -= 1;
                             }
@@ -493,13 +527,14 @@ int main()
                                 hS->z += 1;
                             }
                         }
+                        
                     }
                     drawSprite(hS, player, *hM, &flashTimer, &deltaTime, depth);   
                     hS = hS->next;
                 }
 
                 hS = headSprite;
-                hM = headMap;
+                //hM = headMap;
 
                 if (db) {
 
@@ -514,7 +549,7 @@ int main()
                     }
 
                     hS = headSprite;
-                    hM = headMap;
+                    //hM = headMap;
                     
                 }
                 
@@ -552,9 +587,102 @@ int main()
                 }
                 glfwSwapBuffers(window); 
 
+                if (d == -2) { // trigger for progressing
+                    if (level == LEVEL_ONE) {
+                        level = LEVEL_TWO;
+                        hM = hM->next;
+                        player.heartCounter = 0;
+                        player.plX = 100;
+                        player.plY = 400;
+                        levelInit(&headSprite);
+                    }
+                    else if (level == LEVEL_TWO) {
+                        level = LEVEL_THREE;
+                        hM = hM->next;
+                        player.heartCounter = 0;
+                        //player.plX = 100;
+                        //player.plY = 400;
+                        levelInit(&headSprite);
+                    }
+                    else if (level == LEVEL_THREE) {
+                        gamestate == END_SCREEN;
+                    }
+                    
+                }
+                else if (d == -3) { // go back a level
+                    
+                    if (level == LEVEL_ONE) {
+                        continue;
+                    }
+                    else if (level == LEVEL_TWO) {
+                        level = LEVEL_ONE;
+                        player.heartCounter = 0;
+                        hM = hM->previous;
+                        hM->map = hM->m[1]; // bottom right
+                        player.plX = 415;
+                        player.plY = 415; 
+                        levelInit(&headSprite);
+                    }
+                    else if (level == LEVEL_THREE) {
+                        level = LEVEL_TWO;
+                        player.heartCounter = 0;
+                        hM = hM->previous;
+                        // hM->map = hM->m[x] WHICHEVER PLACE THE DOOR IS
+                        //player.plX = 400;
+                        //player.plY = 400; find the real coords
+                        levelInit(&headSprite);
+                    }
+                    
+                }
+                
+
+                if (deathTrigger) {
+                    
+                    gamestate = GAME_OVER;
+                    
+                    deathTrigger = 0;
+                }
+
                 break;
 
             case END_SCREEN:
+                glfwPollEvents();
+
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                drawScreen(END_SCREEN);
+
+                glfwSwapBuffers(window);
+
+                break;
+
+            case GAME_OVER:
+                
+                glfwPollEvents();
+                
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                
+                drawSide(player);
+                drawScreen(GAME_OVER);
+
+                glfwSwapBuffers(window);
+                
+                if (gameResetFlag) {
+                    
+                    gameResetFlag = FALSE;
+                    level = LEVEL_ONE;
+                    levelInit(&headSprite);
+                    hM = headMap;
+                    hM->map = hM->m[0];
+                    player.plX = 100;
+                    player.plY = 400;
+                    player.pa = 0.0001;
+                    player.hasGun = FALSE; // will eventually start as false
+                    player.moveCounter = 0;
+                    player.pdX = (float)cos(0.0001) * VIEWING_ANGLE_CHANGE;
+                    player.pdY = (float)sin(0.0001) * VIEWING_ANGLE_CHANGE;
+                    gamestate = PLAYING_GAME;
+                }
 
                 break;
         }

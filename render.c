@@ -21,7 +21,8 @@
 #include "dependencies/assets/explode4.ppm"
 #include "dependencies/assets/explode5.ppm"
 #include "dependencies/assets/newHallway.ppm"
-
+#include "dependencies/assets/exitsign.ppm"
+#include "dependencies/assets/back.ppm"
 
 
 void drawGun(Player p, static unsigned int bb) {
@@ -61,7 +62,7 @@ void drawGun(Player p, static unsigned int bb) {
 }
 
 void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
-
+    
     int r, mx, my, mp, dof;
     // loop counter, 
     float rx, ry, ra, xo, yo;
@@ -253,7 +254,7 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
             tile = T_MOSSY;
             break;
         case 2:
-            tile = T_EXIT;
+            tile = T_EXIT_SIGN;
             break;
         case 3:
             tile = T_DOOR4f;
@@ -290,6 +291,9 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
             break;
         case 16:
             tile = T_TREE;
+            break;
+        case 17:
+            tile = T_BACK;
             break;
         default:
             tile = T_MALANE2;
@@ -589,7 +593,7 @@ void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int dt, int depth[
                 // this makes the sprite draw out of bounds but will be fixed when the screen size issue is fixed
                 int pixel = ((int)t_y * 32 + (int)t_x) * 3;
 
-                int* t;
+                int* t = NULL;
 
                 switch (s.texture) {
                 case 1:
@@ -691,6 +695,58 @@ void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int dt, int depth[
                 case 33:
                     t = T_GUNITEM_20;
                     break;
+                case 34:    // RED HEART frame 1
+
+                    break;
+                case 35:    // frame 2
+                    break;
+                case 36:    // frame 3
+                    break;
+                case 37:    // frame 4
+                    break;
+                case 38:    // frame 5
+                    break;
+                case 39:    // frame 6
+                    break;
+                case 40:    // frame 7
+                    break;
+                case 41:    // frame 8
+                    break;
+                case 42:    // frame 9
+                    break;
+                case 43:    // frame 10
+                    // same as 3
+                    break;
+                case 44:    // frame 11
+                    // same as 2
+                    break;
+                case 45:    // frame 12
+                    // same as 1
+                    break;
+                case 46:    // PINK HEART frame 1
+                    break;
+                case 47:    // frame 2
+                    break;
+                case 48:    // frame 3
+                    break;
+                case 49:    // frame 4
+                    break;
+                case 50:    // frame 5
+                    break;
+                case 51:    // frame 6
+                    break;
+                case 52:    // frame 7
+                    break;
+                case 53:    // frame 8
+                    break;
+                case 54:    // frame 9
+                    break;
+                case 55:    // frame 10
+                    break;
+                case 56:    // frame 11
+                    break;
+                case 57:    // frame 12
+                    break;
                 default:
                     t = T_CUPID;
                     break;
@@ -735,11 +791,19 @@ void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int dt, int depth[
 
 void drawScreen(int v) {
     int x; int y;
-    int* T;
+    int* T = NULL;
 
     switch (v) {
-    case 1:
+    case 0:
         T = S_COVER;
+        break;
+    case 2:
+        // end screen
+        T = S_TITLE;
+        break;
+    case 3:
+        // game over
+        T = S_TITLE;
         break;
     default:
         T = S_TITLE;

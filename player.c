@@ -90,7 +90,9 @@ void bulletScan(Sprite * s, Player * pl, int bTravel, int * flashTimer, Map * m)
 }
 
 int movePlayer(Player * p, float deltaTime, Sprite * s, unsigned int * buttonBuffer, Map * m, int bTravel, int * flashTimer)
-{
+{   
+    //printf("Player X: %f, Player Y: %f\n", p->plX, p->plY);
+    
     int xo;     // position for collision detection
     if (p->pdX<0) {
         xo = -MIN_DISTANCE; // if we're going backwards it should be behind us
@@ -366,6 +368,20 @@ int movePlayer(Player * p, float deltaTime, Sprite * s, unsigned int * buttonBuf
             yo+=16;
         }
         
+        if (m->map[ipy_add_yo * MAP_X + ipx_add_xo] == 2) {
+
+            if (p->heartCounter > 5) {
+                return -2;
+            }
+            else {
+                printf("\n-You must have 6 hearts to progress to the next level!-\n");
+            }
+            
+        }
+        else if (m->map[ipy_add_yo * MAP_X + ipx_add_xo] == 17) {
+            return -3;
+        }
+
         if (m->map[ipy_add_yo*MAP_X+ipx_add_xo] == 4 || m->map[ipy_add_yo * MAP_X + ipx_add_xo] == 3) {
             
             int doorValue = ipy_add_yo * MAP_X + ipx_add_xo;
