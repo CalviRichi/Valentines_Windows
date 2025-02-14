@@ -8,9 +8,9 @@
 //#define DEBUG
 
 #ifdef DEBUG
-static const char db = TRUE;
+static char db = TRUE;
 #else
-static const char db = FALSE;
+static char db = FALSE;
 #endif
 
 typedef enum {
@@ -78,6 +78,7 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
                 Mix_Volume(STEP, 6);
             }
             else if (gamestate == TITLE_SCREEN) glfwSetWindowShouldClose(window, GLFW_TRUE);
+            else if (gamestate == GAME_OVER) glfwSetWindowShouldClose(window, GLFW_TRUE);
             break;
         case GLFW_KEY_ENTER:
             if (gamestate == TITLE_SCREEN) {
@@ -122,6 +123,9 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
             if (gamestate == TITLE_SCREEN) {
                 heartFlip = TRUE;
             }
+            else if (gamestate == GAME_OVER) {
+                heartFlip = TRUE;
+            }
             spawnFlag = TRUE;
             //buttonBuffer ^= R_DOWN;
             break;
@@ -129,7 +133,7 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
             killFlag = TRUE;
             break;
         case GLFW_KEY_Y:
-            spawnFlag = TRUE;
+            db ^= TRUE;
             break;
         case COMMA:
             if (gamestate == PLAYING_GAME) {
@@ -324,12 +328,18 @@ int main()
     
     Heart* headHeart = newHeart(125,52);
 
+    Heart* gameOverHeart = newHeart(135, 60);
+    gameOverHeart->color = 0;
+    Heart* gameOverHeart2 = newHeart(132, 60);
+    gameOverHeart2->color = 0;
+
     Sprite* hS; // copies of the head for each list
     Map* hM;
     Heart* hH;
 
     Map * headMap = newMap(map_1_bottom_left, map_1_bottom_right, map_1_top_right, map_1_top_left);
     hM = mapAdd(headMap, map_2_bottom_left, map_2_bottom_right, map_2_top_right, map_2_top_left); // second map
+    hM = mapAdd(hM, map_3_bottom_left, map_3_bottom_right, map_3_top_right, map_3_top_left); // third map
     // map is set to index 0 by default
     hM = headMap;
 
@@ -360,6 +370,7 @@ int main()
    
     double animation = 0;
     int secondAnimation = 0;
+    double third_animation = 0;
 
 
 
@@ -610,7 +621,10 @@ int main()
                         levelInit(&headSprite);
                     }
                     else if (level == LEVEL_THREE) {
-                        gamestate == END_SCREEN;
+
+                        printf("test\n");
+                        gamestate = END_SCREEN;
+                        
                     }
                     
                 }
@@ -664,11 +678,40 @@ int main()
             case GAME_OVER:
                 
                 glfwPollEvents();
-                
+                if (animation == 0) {
+                    third_animation += deltaTime;
+                }
+                if (third_animation >= 0.25) {
+                    if (gameOverHeart->color == 4) {
+                        gameOverHeart->color = 5;
+                        gameOverHeart2->color = 6;
+                        heartMoving = TRUE;
+                        gameOverHeart->x_direction = TRUE;
+                        gameOverHeart2->x_direction = FALSE;
+                    }
+                    else if (gameOverHeart->color < 4) {
+                        //printf("hi\n");
+                        gameOverHeart->color = 4;
+                    }
+                    third_animation = 0;
+                }
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 
                 drawSide(player);
                 drawScreen(GAME_OVER);
+                //printf("color: %d\n", gameOverHeart->color);
+                drawHeart(*gameOverHeart);
+                Heart copy = *gameOverHeart;
+                Heart copy2 = *gameOverHeart2;
+                if (copy2.color == 6) { drawHeart(copy2); }
+                
+                if (copy.color == 5 && copy2.color == 6) {
+                    heartMove(gameOverHeart, heartMoving, heartFlip);
+                    heartMove(gameOverHeart2, heartMoving, heartFlip);
+                }
+                if (heartFlip) {
+                    heartFlip = FALSE;
+                }
 
                 glfwSwapBuffers(window);
                 
@@ -686,7 +729,17 @@ int main()
                     player.moveCounter = 0;
                     player.pdX = (float)cos(0.0001) * VIEWING_ANGLE_CHANGE;
                     player.pdY = (float)sin(0.0001) * VIEWING_ANGLE_CHANGE;
-                    gamestate = PLAYING_GAME;
+
+                    gameOverHeart->color = 3;
+                    gameOverHeart2->color = 0;
+                    gameOverHeart->x_pos = 135;
+                    gameOverHeart->y_pos = 60;
+                    gameOverHeart2->x_pos = 132;
+                    gameOverHeart2->y_pos = 60;
+                    heartMoving = FALSE;
+
+                    Mix_ResumeMusic();
+                    gamestate = TITLE_SCREEN;
                 }
 
                 break;

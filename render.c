@@ -3,7 +3,13 @@
 #include "dependencies/assets/malane2.c"
 #include "dependencies/assets/leigha.c"
 #include "dependencies/assets/MinecraftBricks.c"
+#include "dependencies/assets/gameover.ppm"
 
+#include "dependencies/assets/brokenheart.ppm"
+#include "dependencies/assets/brokenheart2.ppm"
+#include "dependencies/assets/brokenheart3.ppm"
+
+#include "dependencies/assets/endscreen.ppm"
 
 void drawGun(Player p, static unsigned int bb) {
     if (p.hasGun) {
@@ -797,16 +803,16 @@ void drawScreen(int v) {
     int* T = NULL;
 
     switch (v) {
-    case 0:
+    case 0: // title screen
         T = S_COVER;
         break;
     case 2:
         // end screen
-        T = S_TITLE;
+        T = T_ENDSCREEN;
         break;
     case 3:
         // game over
-        T = S_TITLE;
+        T = T_GAMEOVER;
         break;
     default:
         T = S_TITLE;
@@ -888,6 +894,16 @@ void drawHeart(Heart h) {
     case RED:
         T = T_REDHEART_1;
         break;
+    case 4: // first broken
+        T = T_BROKENHEART_1;
+        //printf("testing\n");
+        break;
+    case 5: // broken left
+        T = T_BROKENHEART_2;
+        break;
+    case 6: // broken right
+        T = T_BROKENHEART_3;
+        break;
     default:
         T = T_HEART_1;
         break;
@@ -912,6 +928,27 @@ void drawHeart(Heart h) {
                 glEnd();
             }
             else if (T == T_REDHEART_1 && (!(r == 255) || !(g == 0) || !(b == 255))) {
+                glPointSize(STRETCH);
+                glColor3ub(r, g, b);
+                glBegin(GL_POINTS);
+                glVertex2d((x + h.x_pos) * HEART_SIZE, (y + h.y_pos) * HEART_SIZE);
+                glEnd();
+            }
+            else if (T == T_BROKENHEART_1 && (!(r == 255) || !(g == 0) || !(b == 255))) {
+                glPointSize(STRETCH);
+                glColor3ub(r, g, b);
+                glBegin(GL_POINTS);
+                glVertex2d((x + h.x_pos) * HEART_SIZE, (y + h.y_pos) * HEART_SIZE);
+                glEnd();
+            }
+            else if (T == T_BROKENHEART_2 && (!(r == 255) || !(g == 0) || !(b == 255))) {
+                glPointSize(STRETCH);
+                glColor3ub(r, g, b);
+                glBegin(GL_POINTS);
+                glVertex2d((x + h.x_pos) * HEART_SIZE, (y + h.y_pos) * HEART_SIZE);
+                glEnd();
+            }
+            else if (T == T_BROKENHEART_3 && (!(r == 255) || !(g == 0) || !(b == 255))) {
                 glPointSize(STRETCH);
                 glColor3ub(r, g, b);
                 glBegin(GL_POINTS);
