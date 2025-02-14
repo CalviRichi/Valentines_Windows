@@ -79,6 +79,7 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
             }
             else if (gamestate == TITLE_SCREEN) glfwSetWindowShouldClose(window, GLFW_TRUE);
             else if (gamestate == GAME_OVER) glfwSetWindowShouldClose(window, GLFW_TRUE);
+            else if (gamestate == END_SCREEN) glfwSetWindowShouldClose(window, GLFW_TRUE);
             break;
         case GLFW_KEY_ENTER:
             if (gamestate == TITLE_SCREEN) {
@@ -100,6 +101,10 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
                 
                 gameResetFlag = TRUE;
             }
+            else if (gamestate == END_SCREEN) {
+                gameResetFlag = TRUE;
+            }
+            
             break;
         case GLFW_KEY_SPACE:
             heartMoving ^= TRUE;
@@ -228,7 +233,7 @@ void levelInit(Sprite ** s) {
 
         sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
 
-        spr = spriteAdd(sp, COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 355, 418, HEART_HEIGHT); // BL heart bottom right
+        spr = spriteAdd(sp, COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 352, 418, HEART_HEIGHT); // BL heart bottom right
 
         spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 1, COLLECTABLE_HEALTH, 96, 160, HEART_HEIGHT); // TL heart top left
 
@@ -252,10 +257,66 @@ void levelInit(Sprite ** s) {
     // 34 = red heart
     // 46 = pink heart
     else if (level == LEVEL_TWO) {
-        sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 34, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
+        sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 34, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); 
+
+        spr = spriteAdd(sp, COLLECTABLE, BOTTOM_LEFT, 34, COLLECTABLE_HEALTH, 288, 288, HEART_HEIGHT); 
+
+        spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 34, COLLECTABLE_HEALTH, 416, 416, HEART_HEIGHT); 
+
+        spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 34, COLLECTABLE_HEALTH, 224, 352, HEART_HEIGHT); 
+
+        spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 34, COLLECTABLE_HEALTH, 416, 416, HEART_HEIGHT);
+
+        spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 34, COLLECTABLE_HEALTH, 160, 416, HEART_HEIGHT);
+
+        
+
+        // enemies (they have to be after)
+
+        spr = spriteAdd(spr, ENEMY, TOP_LEFT, 13, ENEMY_HEALTH, 96, 96, ENEMY_HEIGHT);
+
+        spr = spriteAdd(spr, ENEMY, TOP_LEFT, 13, ENEMY_HEALTH, 96, 416, ENEMY_HEIGHT);
+
+        spr = spriteAdd(spr, ENEMY, TOP_RIGHT, 13, ENEMY_HEALTH, 96, 160, ENEMY_HEIGHT);
+
+        spr = spriteAdd(spr, ENEMY, BOTTOM_RIGHT, 13, ENEMY_HEALTH, 416, 96, ENEMY_HEIGHT);
+
+
+        // these make sense to be drawn after
+        spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 34, COLLECTABLE_HEALTH, 288, 96, HEART_HEIGHT);
+
+        spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 34, COLLECTABLE_HEALTH, 288, 352, HEART_HEIGHT);
     }
     else if (level == LEVEL_THREE) {
-        sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
+        sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 46, COLLECTABLE_HEALTH, 224, 416, HEART_HEIGHT); // BL heart top left
+
+        spr = spriteAdd(sp, COLLECTABLE, BOTTOM_LEFT, 34, COLLECTABLE_HEALTH, 160, 416, HEART_HEIGHT);
+
+        spr = spriteAdd(spr, COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 288, 416, HEART_HEIGHT);
+
+        spr = spriteAdd(spr, COLLECTABLE, BOTTOM_LEFT, 14, GUN_HEALTH, 224, 288, HEART_HEIGHT);
+
+        spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 46, COLLECTABLE_HEALTH, 160, 288, HEART_HEIGHT);
+
+        spr = spriteAdd(spr, COLLECTABLE, BOTTOM_RIGHT, 46, COLLECTABLE_HEALTH, 416, 160, HEART_HEIGHT);
+
+        spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 46, COLLECTABLE_HEALTH, 416, 96, HEART_HEIGHT);
+
+        spr = spriteAdd(spr, COLLECTABLE, TOP_RIGHT, 46, COLLECTABLE_HEALTH, 96, 288, HEART_HEIGHT);
+
+        spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 46, COLLECTABLE_HEALTH, 224, 352, HEART_HEIGHT);
+
+        spr = spriteAdd(spr, COLLECTABLE, TOP_LEFT, 46, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT);
+
+        // enemies
+
+        spr = spriteAdd(spr, ENEMY, BOTTOM_LEFT, 13, ENEMY_HEALTH, 288, 160, ENEMY_HEIGHT);
+
+        spr = spriteAdd(spr, ENEMY, TOP_RIGHT, 13, ENEMY_HEALTH, 352, 96, ENEMY_HEIGHT);
+
+        spr = spriteAdd(spr, ENEMY, TOP_RIGHT, 13, ENEMY_HEALTH, 288, 416, ENEMY_HEIGHT);
+
+        spr = spriteAdd(spr, ENEMY, TOP_LEFT, 13, ENEMY_HEALTH, 416, 96, ENEMY_HEIGHT);
     }
     // ENEMIES ALWAYS LAST
     spawnFlag = FALSE;
@@ -324,6 +385,8 @@ int main()
     // END INITIALIZATION ------------------------------------------------------
 
     Sprite * headSprite = NULL;
+    
+    
     levelInit(&headSprite); 
     
     Heart* headHeart = newHeart(125,52);
@@ -340,6 +403,7 @@ int main()
     Map * headMap = newMap(map_1_bottom_left, map_1_bottom_right, map_1_top_right, map_1_top_left);
     hM = mapAdd(headMap, map_2_bottom_left, map_2_bottom_right, map_2_top_right, map_2_top_left); // second map
     hM = mapAdd(hM, map_3_bottom_left, map_3_bottom_right, map_3_top_right, map_3_top_left); // third map
+    hM->map = hM->m[1];
     // map is set to index 0 by default
     hM = headMap;
 
@@ -354,6 +418,7 @@ int main()
     }
     hM = headMap; // for the first time
     
+   
     
     Player player = {
         .plX = 100,
@@ -615,16 +680,18 @@ int main()
                     else if (level == LEVEL_TWO) {
                         level = LEVEL_THREE;
                         hM = hM->next;
+                        hM->map = hM->m[1];
                         player.heartCounter = 0;
                         //player.plX = 100;
-                        //player.plY = 400;
+                        player.plY = 400;
                         levelInit(&headSprite);
                     }
                     else if (level == LEVEL_THREE) {
 
-                        printf("test\n");
+                        //printf("test\n");
                         gamestate = END_SCREEN;
-                        
+                        printf("\nI love you baby\n");
+                        Mix_ResumeMusic();
                     }
                     
                 }
@@ -646,9 +713,9 @@ int main()
                         level = LEVEL_TWO;
                         player.heartCounter = 0;
                         hM = hM->previous;
-                        // hM->map = hM->m[x] WHICHEVER PLACE THE DOOR IS
+                        hM->map = hM->m[3];
                         //player.plX = 400;
-                        //player.plY = 400; find the real coords
+                        player.plY = 100;
                         levelInit(&headSprite);
                     }
                     
@@ -666,9 +733,34 @@ int main()
 
             case END_SCREEN:
                 glfwPollEvents();
+                if (gameResetFlag) {
 
+                    gameResetFlag = FALSE;
+                    level = LEVEL_ONE;
+                    levelInit(&headSprite);
+                    hM = headMap;
+                    hM->map = hM->m[0];
+                    player.plX = 100;
+                    player.plY = 400;
+                    player.pa = 0.0001;
+                    player.hasGun = FALSE; // will eventually start as false
+                    player.moveCounter = 0;
+                    player.pdX = (float)cos(0.0001) * VIEWING_ANGLE_CHANGE;
+                    player.pdY = (float)sin(0.0001) * VIEWING_ANGLE_CHANGE;
+                    player.heartCounter = 0;
+                    gameOverHeart->color = 3;
+                    gameOverHeart2->color = 0;
+                    gameOverHeart->x_pos = 135;
+                    gameOverHeart->y_pos = 60;
+                    gameOverHeart2->x_pos = 132;
+                    gameOverHeart2->y_pos = 60;
+                    heartMoving = FALSE;
+
+                    Mix_ResumeMusic();
+                    gamestate = TITLE_SCREEN;
+                }
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+                drawSide(player);
                 drawScreen(END_SCREEN);
 
                 glfwSwapBuffers(window);

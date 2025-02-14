@@ -10,6 +10,7 @@
 #include "dependencies/assets/brokenheart3.ppm"
 
 #include "dependencies/assets/endscreen.ppm"
+#include "dependencies/assets/fruity.c"
 
 void drawGun(Player p, static unsigned int bb) {
     if (p.hasGun) {
@@ -280,6 +281,18 @@ void drawRays3D(Player p, Map map, int * bTravel, int depth[120]) {
             break;
         case 17:
             tile = T_BACK;
+            break;
+        case 18:
+            tile = T_MALANE2;
+            break;
+        case 19:
+            tile = T_LEIGHA;
+            break;
+        case 20:
+            tile = T_FRUITY;
+            break;
+        case 21:
+            tile = T_WOOD;
             break;
         default:
             tile = T_MALANE2;

@@ -67,7 +67,10 @@ void bulletScan(Sprite * s, Player * pl, int bTravel, int * flashTimer, Map * m)
             // this really should take in the frame rate instead
             if (s->health <= 0 && s->state == 1) {
                 s->state = 0; // turn the sprite off
-                pl->heartCounter++; // give the player one heart
+                if (pl->heartCounter == 0) {
+                    pl->heartCounter++;
+                }
+                //pl->heartCounter++; // give the player one heart
 
                 // Play an enemy death sound
 
