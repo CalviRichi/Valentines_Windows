@@ -7,10 +7,33 @@ static int beginPosX, beginPosY, endPosX, endPosY;
 
 void shootGun(Sprite * s, Player * p, int bTravel, int * flashTimer, Map * m) {
     if (p->hasGun) {
-       
-        if (playSoundEffect("dependencies/assets/gunshot.wav", GUNSHOT)) {
-            printf("something went wrong!\n");
+        srand(time(NULL));
+        int a = rand() % 4;
+        switch (a) {
+        case 0:
+            if (playSoundEffect("dependencies/assets/meow_1.mp3", GUNSHOT)) {
+                printf("something went wrong!\n");
+            }
+            break;
+        case 1:
+            if (playSoundEffect("dependencies/assets/meow_2.mp3", GUNSHOT)) {
+                printf("something went wrong!\n");
+            }
+            break;
+        case 2:
+            if (playSoundEffect("dependencies/assets/meow_3.mp3", GUNSHOT)) {
+                printf("something went wrong!\n");
+            }
+            break;
+        case 3:
+            if (playSoundEffect("dependencies/assets/meow_4.mp3", GUNSHOT)) {
+                printf("something went wrong!\n");
+            }
+            break;
+        default:
+            break;
         }
+        
         while (s) {
             
             bulletScan(s, p, bTravel, flashTimer, m);
@@ -61,12 +84,21 @@ void bulletScan(Sprite * s, Player * pl, int bTravel, int * flashTimer, Map * m)
          
         if ((s->x < b_x_add && s->x > b_x_sub) && (s->y < b_y_add && s->y > b_y_sub)) {
             s->health--;
+            srand(time(NULL));
+            int a = rand() % 2;
+            if (a == 0) {
+                playSoundEffect("dependencies/assets/enemy_hit_1.wav", ITEM);
+            }
+            else if (a == 1) {
+                playSoundEffect("dependencies/assets/enemy_hit_2.wav", ITEM);
+            }
             //printf("sprite health: %d\n", s->health);
             // 1250 works good too
             int div = (i>>3) ? (i>>3) : 1;
             // this really should take in the frame rate instead
             if (s->health <= 0 && s->state == 1) {
                 s->state = 0; // turn the sprite off
+                playSoundEffect("dependencies/assets/enemy_death.wav", ITEM);
                 if (pl->heartCounter == 0) {
                     pl->heartCounter++;
                 }

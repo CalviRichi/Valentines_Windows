@@ -58,6 +58,7 @@ static char bulletTravel = FALSE; // this could be replaced with flashtimer
 static int depth[120];
 
 static char tutorial = TRUE;
+static char heartTutorial = TRUE;
 
 static char heartMoving = FALSE;
 static char heartFlip = FALSE;
@@ -93,12 +94,11 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
                 if (tutorial) {
                     printf("\n---Press 'W' to move forward and 'S' to move back---\n");
                     printf("---Press 'A' and 'D' to look left and right---\n");
-                    printf("---Press 'E' on a door to open it---\n");
+                    printf("---Press 'E' on a door to open it (this might take multiple tries)---\n");
                     tutorial = FALSE;
                 }
             }
             else if (gamestate == GAME_OVER) {
-                
                 gameResetFlag = TRUE;
             }
             else if (gamestate == END_SCREEN) {
@@ -107,6 +107,9 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
             
             break;
         case GLFW_KEY_SPACE:
+            if (heartTutorial) {
+                printf("Press ',' for something else\n");
+            }
             heartMoving ^= TRUE;
             break;
         case W:
@@ -146,6 +149,12 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
                 buttonBuffer ^= GUN_FIRE;
             }
             else if (gamestate == TITLE_SCREEN) {
+                if (heartTutorial) {
+                    printf("\nNow press it as many times as you want!!!\n");
+                    printf("\nPress '.' to get rid of them, you can press 'r' to flip them!\n");
+                    printf("\n.\n.\n.\n\n(and press 'Enter' for the real game, or press 'Escape' to quit)\n");
+                    heartTutorial = FALSE;
+                }
                 buttonBuffer ^= ADD_HEART;
             }
             break;
@@ -184,7 +193,7 @@ void handleKeys(GLFWwindow *window, int key, int scancode, int action, int mods)
             //buttonBuffer ^= COMMA_DOWN;
             break;
         case PERIOD:
-            buttonBuffer ^= PERIOD_DOWN;
+            //buttonBuffer ^= PERIOD_DOWN;
             break;
         default:
             break;
@@ -439,11 +448,11 @@ int main()
 
 
 
-    printf("Welcome to the game!!!\n\n");
-    printf("---Press 'Enter' to start or press 'Esc' to pause the game---\n");
-    printf("---(press 'Esc' once more in the pause screen to exit)---\n");
-   
-    
+    printf("Welcome to the Steal My Heart!!!\n");
+    printf("Happy Valentine's Day baby\n\n");
+    printf("Press space for something fun to happen\n\n");
+
+
     // GAME LOOP
 
     Mix_Music* music = Mix_LoadMUS("dependencies/assets/StealmyHeart_Music.wav");
@@ -525,6 +534,7 @@ int main()
                     
                     if (animation == 0) {
                         if (hM->map[dChange] == 4) { // start the animation
+                            playSoundEffect("dependencies/assets/shatter.wav", GUNSHOT);
                             hM->map[dChange] = 6;
                         }
                         else if (hM->map[dChange] == 12) {
@@ -534,6 +544,7 @@ int main()
                         }
 
                         if (hM->map[dChange] == 3) { // start the animation
+                            playSoundEffect("dependencies/assets/shatter.wav", GUNSHOT);
                             hM->map[dChange] = 7;
                         }
                         else {
@@ -670,6 +681,7 @@ int main()
 
                 if (d == -2) { // trigger for progressing
                     if (level == LEVEL_ONE) {
+                        playSoundEffect("dependencies/assets/item.wav", ITEM);
                         level = LEVEL_TWO;
                         hM = hM->next;
                         player.heartCounter = 0;
@@ -678,6 +690,7 @@ int main()
                         levelInit(&headSprite);
                     }
                     else if (level == LEVEL_TWO) {
+                        playSoundEffect("dependencies/assets/item.wav", ITEM);
                         level = LEVEL_THREE;
                         hM = hM->next;
                         hM->map = hM->m[1];
@@ -687,10 +700,14 @@ int main()
                         levelInit(&headSprite);
                     }
                     else if (level == LEVEL_THREE) {
-
+                        playSoundEffect("dependencies/assets/item.wav", ITEM);
                         //printf("test\n");
                         gamestate = END_SCREEN;
-                        printf("\nI love you baby\n");
+                        printf("\nI love you baby, you're so so good and smart\n");
+                        printf("\nI hope you had fun, I really really care about you");
+                        printf("\nand I just want to make you smile :)\n\n");
+
+                        printf("You can press 'Enter' to replay or 'Escape' to quit\n\n");
                         Mix_ResumeMusic();
                     }
                     
@@ -701,6 +718,7 @@ int main()
                         continue;
                     }
                     else if (level == LEVEL_TWO) {
+                        playSoundEffect("dependencies/assets/item.wav", ITEM);
                         level = LEVEL_ONE;
                         player.heartCounter = 0;
                         hM = hM->previous;
@@ -710,6 +728,7 @@ int main()
                         levelInit(&headSprite);
                     }
                     else if (level == LEVEL_THREE) {
+                        playSoundEffect("dependencies/assets/item.wav", ITEM);
                         level = LEVEL_TWO;
                         player.heartCounter = 0;
                         hM = hM->previous;
@@ -725,7 +744,8 @@ int main()
                 if (deathTrigger) {
                     
                     gamestate = GAME_OVER;
-                    
+                    playSoundEffect("dependencies/assets/game_over.mp3", STEP);
+                    printf("\nIt'll be ok <3 --- You can press 'Enter' to play again\n\n");
                     deathTrigger = 0;
                 }
 
@@ -780,10 +800,12 @@ int main()
                         heartMoving = TRUE;
                         gameOverHeart->x_direction = TRUE;
                         gameOverHeart2->x_direction = FALSE;
+                        playSoundEffect("dependencies/assets/shatter.wav", GUNSHOT);
                     }
                     else if (gameOverHeart->color < 4) {
                         //printf("hi\n");
                         gameOverHeart->color = 4;
+                        playSoundEffect("dependencies/assets/heartbreak.wav", GUNSHOT);
                     }
                     third_animation = 0;
                 }

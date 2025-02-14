@@ -105,7 +105,7 @@ void drawSpriteMap(Sprite s) {
 int moveSprite(Sprite * s, float dt, Player * pl, Map m) {
     
     Player p = *pl;
-    if (interact < ATTACK_RATE) {
+    if (interact <= ATTACK_RATE) {
         interact += dt;
     }
 
@@ -114,6 +114,8 @@ int moveSprite(Sprite * s, float dt, Player * pl, Map m) {
     }
 
     if (s->state == ENEMY) { // if it is an enemy
+    
+    
 
     int spx = ((int)s->x)>>6, spy = ((int)s->y)>>6; // bitshifting right by 6 is the same as dividing by 64
     int spx_add = ((int)s->x+5)>>6, spy_add = ((int)s->y+5)>>6;
@@ -150,12 +152,44 @@ int moveSprite(Sprite * s, float dt, Player * pl, Map m) {
     }
     
     float d = dist(s->x, s->y, p.plX, p.plY, 0);
-    if (d < 10 && interact > ATTACK_RATE) {
+
+    if (interact > ATTACK_RATE) {
+        srand(time(NULL));
+        int a = rand() % 5;
+        if (a == 1) {
+            int b = rand() % 2;
+            if (b == 0) {
+                playSoundEffect("dependencies/assets/enemy_groan_1.wav", GUNSHOT);
+            }
+            else if (b == 1) {
+                playSoundEffect("dependencies/assets/enemy_groan_2.wav", GUNSHOT);
+            }
+        }
+        //interact = 0;
+    }
+
+    if (d < 15 && interact > ATTACK_RATE) {
         if (pl->heartCounter > 0) {
+            srand(time(NULL));
+            int a = rand() % 2;
+            if (a == 0) {
+                playSoundEffect("dependencies/assets/enemy_attack_1.wav", -1);
+            }
+            else if (a == 1) {
+                playSoundEffect("dependencies/assets/enemy_attack_2.wav", -1);
+            }
+            
             pl->heartCounter--;
         }
         else if (pl->heartCounter <= 0) {
-            
+            srand(time(NULL));
+            int a = rand() % 2;
+            if (a == 0) {
+                playSoundEffect("dependencies/assets/enemy_attack_1.wav", -1);
+            }
+            else if (a == 1) {
+                playSoundEffect("dependencies/assets/enemy_attack_2.wav", -1);
+            }
             interact = 0;
             return 1;
         }
@@ -186,8 +220,16 @@ int moveSprite(Sprite * s, float dt, Player * pl, Map m) {
         else if (d < 10 && s->health == (GUN_HEALTH)) {
          
             s->state = OFF;
+            if (pl->hasGun == FALSE) {
+                printf("\n---Press ',' to fire!---\n");
+            }
+            else {
+                printf("\n(You can press 'r' to reset hearts/enemies if you get stuck)\n");
+                printf("\n(You can press 'y' to show a map of the level)\n");
+            }
             pl->hasGun = TRUE;
-            playSoundEffect("dependencies/assets/coin.wav", ITEM);
+            
+            playSoundEffect("dependencies/assets/item.wav", GUNSHOT);
         }
        
         return 0;
