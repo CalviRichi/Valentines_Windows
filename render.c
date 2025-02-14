@@ -1,28 +1,8 @@
 #include "render.h"
 #include "dependencies/assets/textures.h"
-#include "dependencies/assets/title.ppm"
-#include "dependencies/assets/cover.ppm"
-#include "dependencies/assets/steal_my_heart.ppm"
-#include "dependencies/assets/pinkheart.ppm"
-#include "dependencies/assets/redheart.ppm"
-#include "dependencies/assets/standardwall.ppm"
-#include "dependencies/assets/overgrownwal.ppm"
-#include "dependencies/assets/secondovergrownwall.ppm"
-#include "dependencies/assets/ceiling.ppm"
-#include "dependencies/assets/tree.ppm"
-#include "dependencies/assets/ground.ppm"
-
-#include "dependencies/assets/door2f.ppm"
-#include "dependencies/assets/door4f.ppm"
-
-#include "dependencies/assets/explode1.ppm"
-#include "dependencies/assets/explode2.ppm"
-#include "dependencies/assets/explode3.ppm"
-#include "dependencies/assets/explode4.ppm"
-#include "dependencies/assets/explode5.ppm"
-#include "dependencies/assets/newHallway.ppm"
-#include "dependencies/assets/exitsign.ppm"
-#include "dependencies/assets/back.ppm"
+#include "dependencies/assets/malane2.c"
+#include "dependencies/assets/leigha.c"
+#include "dependencies/assets/MinecraftBricks.c"
 
 
 void drawGun(Player p, static unsigned int bb) {
@@ -696,56 +676,79 @@ void drawSprite(Sprite* sp, Player p, Map m, int* flashTimer, int dt, int depth[
                     t = T_GUNITEM_20;
                     break;
                 case 34:    // RED HEART frame 1
-
+                    t = T_REDHEART_1;
                     break;
                 case 35:    // frame 2
+                    t = T_REDHEART_2;
                     break;
                 case 36:    // frame 3
+                    t = T_REDHEART_3;
                     break;
                 case 37:    // frame 4
+                    t = T_REDHEART_4;
                     break;
                 case 38:    // frame 5
+                    t = T_REDHEART_5;
                     break;
                 case 39:    // frame 6
+                    t = T_REDHEART_6;
                     break;
                 case 40:    // frame 7
+                    t = T_REDHEART_7;
                     break;
                 case 41:    // frame 8
+                    t = T_REDHEART_8;
                     break;
                 case 42:    // frame 9
+                    t = T_REDHEART_9;
                     break;
                 case 43:    // frame 10
+                    t = T_REDHEART_3;
                     // same as 3
                     break;
                 case 44:    // frame 11
+                    t = T_REDHEART_2;
                     // same as 2
                     break;
                 case 45:    // frame 12
+                    t = T_REDHEART_1;
                     // same as 1
                     break;
                 case 46:    // PINK HEART frame 1
+                    t = T_PINKHEART_1;
                     break;
                 case 47:    // frame 2
+                    t = T_PINKHEART_2;
                     break;
                 case 48:    // frame 3
+                    t = T_PINKHEART_3;
                     break;
                 case 49:    // frame 4
+                    t = T_PINKHEART_4;
                     break;
                 case 50:    // frame 5
+                    t = T_PINKHEART_5;
                     break;
                 case 51:    // frame 6
+                    t = T_PINKHEART_6;
                     break;
                 case 52:    // frame 7
+                    t = T_PINKHEART_7;
                     break;
                 case 53:    // frame 8
+                    t = T_PINKHEART_8;
                     break;
                 case 54:    // frame 9
+                    t = T_PINKHEART_9;
                     break;
                 case 55:    // frame 10
+                    t = T_PINKHEART_3;
                     break;
                 case 56:    // frame 11
+                    t = T_PINKHEART_2;
                     break;
                 case 57:    // frame 12
+                    t = T_PINKHEART_1;
                     break;
                 default:
                     t = T_CUPID;
@@ -880,10 +883,10 @@ void drawHeart(Heart h) {
         T = T_HEART_1;
         break;
     case PINK:
-        T = T_PINK_HEART;
+        T = T_PINKHEART_1;
         break;
     case RED:
-        T = T_RED_HEART;
+        T = T_REDHEART_1;
         break;
     default:
         T = T_HEART_1;
@@ -894,11 +897,25 @@ void drawHeart(Heart h) {
         for (int x = 0; x < 32; x++) {
             int pixel = (32 * y * 3) + (x * 3);
             int r = T[pixel]; int g = T[pixel + 1]; int b = T[pixel + 2];
-            if (!(r > 200 && g > 200)) {
+            if (T == T_HEART_1 && !(r > 200 && g > 200)) {
                 glPointSize(STRETCH);
                 glColor3ub(r, g, b);
                 glBegin(GL_POINTS);
-                glVertex2d((x+h.x_pos) * HEART_SIZE, (y+h.y_pos) * HEART_SIZE);
+                glVertex2d((x + h.x_pos) * HEART_SIZE, (y + h.y_pos) * HEART_SIZE);
+                glEnd();
+            }
+            else if (T == T_PINKHEART_1 && (!(r == 255) || !(g == 0) || !(b == 255))) {
+                glPointSize(STRETCH);
+                glColor3ub(r, g, b);
+                glBegin(GL_POINTS);
+                glVertex2d((x + h.x_pos) * HEART_SIZE, (y + h.y_pos) * HEART_SIZE);
+                glEnd();
+            }
+            else if (T == T_REDHEART_1 && (!(r == 255) || !(g == 0) || !(b == 255))) {
+                glPointSize(STRETCH);
+                glColor3ub(r, g, b);
+                glBegin(GL_POINTS);
+                glVertex2d((x + h.x_pos) * HEART_SIZE, (y + h.y_pos) * HEART_SIZE);
                 glEnd();
             }
         }

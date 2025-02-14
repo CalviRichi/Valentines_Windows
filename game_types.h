@@ -197,7 +197,7 @@ void mapRemove(Map *item, int * dataCopy[ROOM_NUM]);
 void shootGun(Sprite * s, Player * p, int bTravel, int * flashTimer, Map * m);
 void drawBullet();
 void bulletScan(Sprite * s, Player * p, int bTravel, int * flashTimer, Map * m);
-int movePlayer(Player * p, float deltaTime, Sprite * s, unsigned char * buttonBuffer, Map * m, int bTravel, int * flashTimer);
+int movePlayer(Player* p, float deltaTime, Sprite* s, unsigned int* buttonBuffer, Map* m, int bTravel, int* flashTimer);
 void drawPlayer(Player p);
 
 // ------------- SPRITE FUNCTIONS -- DEFINED WITHIN SPRITE.C

@@ -207,6 +207,9 @@ void levelWipe(Sprite** s) {
 } // will be called when changing maps
 
 void levelInit(Sprite ** s) {
+    if (s == NULL) {
+        return;
+    }
     if (*s != NULL) {
         levelWipe(s);
     }
@@ -242,8 +245,10 @@ void levelInit(Sprite ** s) {
         spr = spriteAdd(spr, ENEMY, TOP_RIGHT, 13, ENEMY_HEALTH, 96, 288, ENEMY_HEIGHT); // TR enemy left
 
     }
+    // 34 = red heart
+    // 46 = pink heart
     else if (level == LEVEL_TWO) {
-        sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
+        sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 34, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
     }
     else if (level == LEVEL_THREE) {
         sp = newSprite(COLLECTABLE, BOTTOM_LEFT, 1, COLLECTABLE_HEALTH, 96, 96, HEART_HEIGHT); // BL heart top left
